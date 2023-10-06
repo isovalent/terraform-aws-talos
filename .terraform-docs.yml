@@ -1,0 +1,5 @@
+# https://terraform-docs.io/user-guide/configuration/
+formatter: "markdown table"
+output:
+  file: README.md
+  mode: inject
