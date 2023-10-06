@@ -5,7 +5,7 @@ resource "random_id" "cluster" {
 }
 
 module "vpc" {
-  source = "git::ssh://git@github.com/isovalent/terraform-aws-vpc.git?ref=v1.5"
+  source = "git::ssh://git@github.com/isovalent/terraform-aws-vpc.git?ref=v1.6"
 
   cidr   = var.vpc_cidr
   name   = "${var.cluster_name}-${random_id.cluster.dec}"
