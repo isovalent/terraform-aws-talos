@@ -1,0 +1,25 @@
+cluster:
+  clusterName: ${CLUSTER_NAME}
+  # https://www.talos.dev/v1.5/reference/configuration/#clusternetworkconfig
+  network:
+    cni:
+      name: none
+    podSubnets:
+    - ${POD_CIDR}
+    serviceSubnets:
+    - ${SERVICE_CIDR}
+  # https://www.talos.dev/v1.5/kubernetes-guides/configuration/deploy-metrics-server/#install-during-bootstrap
+  extraManifests:
+    - https://raw.githubusercontent.com/alex1989hu/kubelet-serving-cert-approver/main/deploy/standalone-install.yaml
+    - https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+machine:
+  # https://www.talos.dev/v1.5/kubernetes-guides/configuration/deploy-metrics-server/
+  kubelet:
+    extraArgs:
+      rotate-server-certificates: true
+  features:
+    # Enabling in-cluster highly-available controlplane endpoint.
+    # https://www.talos.dev/v1.5/kubernetes-guides/configuration/kubeprism/
+    kubePrism:
+      enabled: true
+      port: 7445
