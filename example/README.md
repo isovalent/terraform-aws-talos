@@ -93,7 +93,7 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cilium"></a> [cilium](#module\_cilium) | git::https://github.com/isovalent/terraform-k8s-cilium.git | v1.5 |
+| <a name="module_cilium"></a> [cilium](#module\_cilium) | git::https://github.com/isovalent/terraform-k8s-cilium.git | v1.6 |
 | <a name="module_talos"></a> [talos](#module\_talos) | ../ | n/a |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | git::https://github.com/isovalent/terraform-aws-vpc.git | v1.7 |
 
