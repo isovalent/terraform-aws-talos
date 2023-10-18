@@ -58,6 +58,8 @@ TALOSCONFIG=$(terraform output --raw path_to_talosconfig_file)
 talosctl config node $(terraform output --raw elb_dns_name)
 talosctl version
 talosctl health
+talosctl service
+talosctl get members
 # Optionally, print the Talos machineconfig:
 talosctl get machineconfig -o yaml
 ```
