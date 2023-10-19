@@ -30,7 +30,7 @@ variable "vpc_cidr" {
 variable "tags" {
   default = {
     usage    = "cute",
-    customer = "talos"
+    platform = "talos"
   }
   description = "The set of tags to place on the created resources. These will be merged with the default tags defined via local.tags in 00-locals.tf."
   type        = map(string)
@@ -69,15 +69,15 @@ variable "pod_cidr" {
 }
 
 variable "cilium_helm_chart" {
-  default     = "isovalent/cilium"
+  default     = "cilium/cilium"
   type        = string
-  description = "The name of the Helm chart used by the customer."
+  description = "The name of the Helm chart to be used. The naming depends on the Helm repo naming on the local machine."
 }
 
 variable "cilium_helm_version" {
-  default     = "1.14.2-cee.beta.1"
+  default     = "1.14.3"
   type        = string
-  description = "The version of the Helm charts used by the customer."
+  description = "The version of the used Helm chart. Check https://github.com/cilium/cilium/releases to see available versions."
 }
 
 variable "cilium_helm_values_file_path" {

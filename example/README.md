@@ -1,7 +1,5 @@
 # Example CuTE for Talos Terraform Module
 
-The data in this folder represents our best attempt at recreating an Talos Linux environment similar to Customer XY.
-
 The Customer Reproduction Environment is based on the contents of:
 * `03-cilium-values.yaml`
 * `terraform.tfvars` <- to be created by you
@@ -43,8 +41,6 @@ If necessary, grab the credentials for the AWS `terraform` user from [here](http
 make apply
 ```
 
-Please ping [@Philip](https://isovalent.slack.com/team/D04FW9CR8H5) or [#customer-success](https://isovalent.slack.com/archives/C03S3K4RJDA) for any questions.
-
 ## Using the CuTE
 
 Once Terraform has completed creating the CuTE it will create a KubeConfig file you can use to access the CuTE. Use the following commmand to access the CuTE:
@@ -79,19 +75,20 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 
 ## Terraform Module Doc
 <!-- BEGIN_TF_DOCS -->
-## Requirements
+### Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
 
-## Providers
+### Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | n/a |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
 
-## Modules
+### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
@@ -99,20 +96,20 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 | <a name="module_talos"></a> [talos](#module\_talos) | ../ | n/a |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | git::https://github.com/isovalent/terraform-aws-vpc.git | v1.7 |
 
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
 | [random_id.cluster](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 
-## Inputs
+### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cilium_helm_chart"></a> [cilium\_helm\_chart](#input\_cilium\_helm\_chart) | The name of the Helm chart used by the customer. | `string` | `"isovalent/cilium"` | no |
+| <a name="input_cilium_helm_chart"></a> [cilium\_helm\_chart](#input\_cilium\_helm\_chart) | The name of the Helm chart to be used. The naming depends on the Helm repo naming on the local machine. | `string` | `"cilium/cilium"` | no |
 | <a name="input_cilium_helm_values_file_path"></a> [cilium\_helm\_values\_file\_path](#input\_cilium\_helm\_values\_file\_path) | Cilium values file | `string` | `"03-cilium-values.yaml"` | no |
 | <a name="input_cilium_helm_values_override_file_path"></a> [cilium\_helm\_values\_override\_file\_path](#input\_cilium\_helm\_values\_override\_file\_path) | Override Cilium values file | `string` | `""` | no |
-| <a name="input_cilium_helm_version"></a> [cilium\_helm\_version](#input\_cilium\_helm\_version) | The version of the Helm charts used by the customer. | `string` | `"1.14.2-cee.beta.1"` | no |
+| <a name="input_cilium_helm_version"></a> [cilium\_helm\_version](#input\_cilium\_helm\_version) | The version of the used Helm chart. Check https://github.com/cilium/cilium/releases to see available versions. | `string` | `"1.14.3"` | no |
 | <a name="input_cilium_namespace"></a> [cilium\_namespace](#input\_cilium\_namespace) | The namespace in which to install Cilium. | `string` | `"kube-system"` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | The (Cilium) ID of the cluster. Must be unique for Cilium ClusterMesh and between 0-255. | `number` | `"1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the cluster. | `string` | `"talos-cute"` | no |
@@ -122,11 +119,11 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 | <a name="input_pre_cilium_install_script"></a> [pre\_cilium\_install\_script](#input\_pre\_cilium\_install\_script) | A script to be run before installing Cilium. | `string` | `""` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for K8s Services | `string` | `"100.68.0.0/16"` | no |
-| <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the created resources. These will be merged with the default tags defined via local.tags in 00-locals.tf. | `map(string)` | <pre>{<br>  "customer": "talos",<br>  "usage": "cute"<br>}</pre> | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the created resources. These will be merged with the default tags defined via local.tags in 00-locals.tf. | `map(string)` | <pre>{<br>  "platform": "talos",<br>  "usage": "cute"<br>}</pre> | no |
 | <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.5.3"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The CIDR to use for the VPC. Currently it must be a /16 or /24. | `string` | `"10.0.0.0/16"` | no |
 
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|

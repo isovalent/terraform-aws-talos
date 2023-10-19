@@ -1,6 +1,6 @@
 # -- Generic Cilium Agent Configurations
 
-# -- Enable/disable debug logging
+# Enable/disable debug logging
 #debug:
   #enabled: true
   # -- Configure verbosity levels for debug logging
@@ -21,22 +21,9 @@ cluster:
   name: ${CLUSTER_NAME}
   id: ${CLUSTER_ID}
 
-# Configure IPAM/PodCIDR
-ipam:
-  mode: kubernetes
-  # Talos always assign PodCIDR to nodes, hence we should only support "kubernetes" IPAM mode.
-  # mode: cluster-pool
-  # operator:
-  #   clusterPoolIPv4PodCIDRList:
-  #   - ${POD_CIDR}
-  #   clusterPoolIPv4MaskSize: 24
-
-# Disable IPv6 support
-ipv6:
-  enabled: false
-
 # Routing/encapsulation mode
-tunnel: vxlan
+tunnelProtocol: vxlan
+routingMode: tunnel
 
 # KubeProxyReplacement
 kubeProxyReplacement: "true"
@@ -72,9 +59,20 @@ operator:
 prometheus:
   enabled: true
 
-# Talos Linux Specifics
+# -- Talos Linux Specifics
 # https://www.talos.dev/v1.5/kubernetes-guides/network/deploying-cilium/
-# -- Configure cgroup related configuration
+
+# Configure IPAM/PodCIDR
+ipam:
+  # Talos always assign PodCIDR to nodes, hence we should stick to "kubernetes" IPAM mode.
+  mode: kubernetes
+  # mode: cluster-pool
+  # operator:
+  #   clusterPoolIPv4PodCIDRList:
+  #   - ${POD_CIDR}
+  #   clusterPoolIPv4MaskSize: 24
+
+# Configure cgroup related configuration
 cgroup:
   autoMount:
     enabled: false
@@ -89,8 +87,7 @@ securityContext:
     - NET_RAW
     - IPC_LOCK
     - SYS_ADMIN
-    - PERFMON
-    - BPF
+    - SYS_RESOURCE
     - DAC_OVERRIDE
     - FOWNER
     - SETGID
@@ -98,5 +95,4 @@ securityContext:
     cleanCiliumState:
     - NET_ADMIN
     - SYS_ADMIN
-    - PERFMON
-    - BPF
+    - SYS_RESOURCE
