@@ -19,8 +19,14 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "allocate_node_cidrs" {
+  description = "Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode."
+  type        = bool
+  default     = true
+}
+
 variable "pod_cidr" {
-  description = "The CIDR to use for pods."
+  description = "The CIDR to use for Pods. Only required in case allocate_node_cidrs is set to 'true'. Otherwise, simply configure it inside Cilium's Helm values."
   default     = "100.64.0.0/14"
   type        = string
 }
@@ -35,12 +41,6 @@ variable "disable_kube_proxy" {
   description = "Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed."
   type        = bool
   default     = true
-}
-
-variable "ccm" {
-  description = "Whether to deploy aws cloud controller manager"
-  type        = bool
-  default     = false
 }
 
 variable "talos_version" {

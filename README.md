@@ -1,14 +1,18 @@
 # terraform-aws-talos
 
-A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is uses the official [Talos Terraform provider](https://github.com/siderolabs/terraform-provider-talos) in the background. In addition, we mainly followed the [siderolabs/contrib example](https://github.com/siderolabs/contrib/tree/main/examples/terraform/aws) on how to use this upstream provider on AWS.
+A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is uses the official [Talos Terraform provider](https://github.com/siderolabs/terraform-provider-talos) in the background. We mainly followed the provided [siderolabs/contrib](https://github.com/siderolabs/contrib/tree/main/examples/terraform/aws) example.
 
 ## Supported Features
 
 - Install Talos Linux OS EC2 VMs
-  - It's only supported to deploy them in public subnets
-- Bootstrap Talos Kubernetes cluster
-- Cilium Kube-Proxy replacement
-- Install AWS Cloud Controller Manager
+  - For now, it's only supported to deploy the VMs in public subnets with public IPs assigned
+- Bootstrap Talos Kubernetes cluster with some infrastructure components:
+  - [Talos' KubePrism](https://www.talos.dev/v1.5/kubernetes-guides/configuration/kubeprism/) to get an internal endpoint for the KAPI (used for [Cilium Kube-Proxy replacement](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/))
+  - [kubernetes-sigs/metrics-server](https://github.com/kubernetes-sigs/metrics-server/)
+  - [alex1989hu/kubelet-serving-cert-approver](https://github.com/alex1989hu/kubelet-serving-cert-approver) inspired by [Talos' Deploying Metrics Server](https://www.talos.dev/v1.5/kubernetes-guides/configuration/deploy-metrics-server/) guide.
+- Cilium features:
+  - [Kube-Proxy replacement](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/)
+  - [IPAM modes](https://docs.cilium.io/en/stable/network/concepts/ipam/): `kubernetes`, `cluster-pool`
 
 ## Example Usage
 ```
@@ -17,19 +21,17 @@ module "talos" {
   source = "git::https://github.com/isovalent/terraform-aws-talos?ref=<RELEASE_TAG>"
 
   // Supported Talos versions (and therefore K8s versions) can be found here: https://github.com/siderolabs/talos/releases
-  talos_version = "v1.5.3"
-  cluster_name  = "talos-cute"
-  region        = "eu-west-1"
-  tags          = local.tags
+  talos_version      = "v1.5.3"
+  kubernetes_version = "1.27.3"
+  cluster_name       = "talos-cute"
+  region             = "eu-west-1"
+  tags               = local.tags
   // VPC needs to be created in advance via https://github.com/isovalent/terraform-aws-vpc
-  vpc_id        = module.vpc.id
-  pod_cidr      = "100.64.0.0/14"
-  service_cidr  = "100.68.0.0/16"
+  vpc_id             = module.vpc.id
+  pod_cidr           = "100.64.0.0/14"
+  service_cidr       = "100.68.0.0/16"
 }
 ```
-
-## ToDos
-- [ ] Add public bootstrap node to keep all Talos nodes private
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -65,8 +67,6 @@ module "talos" {
 
 | Name | Type |
 |------|------|
-| [aws_iam_policy.control_plane_ccm_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_policy.worker_ccm_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [local_file.kubeconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [local_file.talosconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [null_resource.wait_for_public_subnets](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -89,7 +89,7 @@ module "talos" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_ccm"></a> [ccm](#input\_ccm) | Whether to deploy aws cloud controller manager | `bool` | `false` | no |
+| <a name="input_allocate_node_cidrs"></a> [allocate\_node\_cidrs](#input\_allocate\_node\_cidrs) | Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode. | `bool` | `true` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | The ID of the cluster. | `number` | `"1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of cluster | `string` | n/a | yes |
 | <a name="input_config_patch_files"></a> [config\_patch\_files](#input\_config\_patch\_files) | Path to talos config path files that applies to all nodes | `list(string)` | `[]` | no |
@@ -97,7 +97,7 @@ module "talos" {
 | <a name="input_disable_kube_proxy"></a> [disable\_kube\_proxy](#input\_disable\_kube\_proxy) | Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed. | `bool` | `true` | no |
 | <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/. For example '1.27.3'. | `string` | `""` | no |
-| <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for pods. | `string` | `"100.64.0.0/14"` | no |
+| <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for Pods. Only required in case allocate\_node\_cidrs is set to 'true'. Otherwise, simply configure it inside Cilium's Helm values. | `string` | `"100.64.0.0/14"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the RKE2 cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the cluster. | `map(string)` | n/a | yes |

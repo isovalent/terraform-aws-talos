@@ -55,16 +55,22 @@ variable "service_cidr" {
   type        = string
 }
 
-# Cilium module
-variable "cilium_namespace" {
-  default     = "kube-system"
-  description = "The namespace in which to install Cilium."
-  type        = string
+variable "allocate_node_cidrs" {
+  description = "Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode."
+  type        = bool
+  default     = false
 }
 
 variable "pod_cidr" {
   default     = "100.64.0.0/14"
-  description = "The CIDR to use for K8s Pods-"
+  description = "The CIDR to use for K8s Pods. Depending on if allocate_node_cidrs is set or not, it will either be configured on the controllerManager and assigned to Node resources or to CiliumNode CRs (in case Cilium runs with 'cluster-pool' IPAM mode)."
+  type        = string
+}
+
+# Cilium module
+variable "cilium_namespace" {
+  default     = "kube-system"
+  description = "The namespace in which to install Cilium."
   type        = string
 }
 

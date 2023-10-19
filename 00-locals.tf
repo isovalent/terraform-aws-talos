@@ -21,20 +21,19 @@ locals {
   path_to_kubeconfig_file  = "${local.path_to_workspace_dir}/kubeconfig"
   path_to_talosconfig_file = "${local.path_to_workspace_dir}/talosconfig"
 
-  common_machine_config_patch = {
-    machine = {
-      kubelet = {
-        registerWithFQDN = true
-      }
-    }
-  }
-
-  config_cilium_patch = {
+  common_config_patch = {
     cluster = {
       id          = var.cluster_id,
       clusterName = var.cluster_name,
-      proxy = {
-        disabled = var.disable_kube_proxy
+      apiServer = {
+        certSANs = [
+          module.elb_k8s_elb.elb_dns_name
+        ]
+      },
+      controllerManager = {
+        extraArgs = {
+          allocate-node-cidrs = var.allocate_node_cidrs
+        }
       },
       network = {
         cni = {
@@ -53,6 +52,9 @@ locals {
       ]
     },
     machine = {
+      kubelet = {
+        registerWithFQDN = true
+      },
       certSANs = [
         module.elb_k8s_elb.elb_dns_name
       ],
@@ -60,7 +62,18 @@ locals {
         extraArgs = {
           rotate-server-certificates = true
         }
-      },
+      }
+    }
+  }
+
+  # Used to configure Cilium Kube-Proxy replacement
+  config_cilium_patch = {
+    cluster = {
+      proxy = {
+        disabled = var.disable_kube_proxy
+      }
+    },
+    machine = {
       features = {
         kubePrism = {
           enabled = true,
@@ -70,37 +83,9 @@ locals {
     }
   }
 
-  ccm_patch_cp = {
-    cluster = {
-      apiServer = {
-        certSANs = [
-          module.elb_k8s_elb.elb_dns_name
-        ]
-      },
-      externalCloudProvider = {
-        enabled = true
-        manifests = [
-          "https://raw.githubusercontent.com/siderolabs/contrib/main/examples/terraform/aws/manifests/ccm.yaml"
-        ]
-      }
-    }
-  }
-
-  ccm_patch_worker = {
-    cluster = {
-      externalCloudProvider = {
-        enabled = true
-      }
-    }
-  }
-
   config_patches_common = [
     for path in var.config_patch_files : file(path)
   ]
-
-  config_patches_controlplane = var.ccm ? [yamlencode(local.ccm_patch_cp)] : []
-
-  config_patches_worker = var.ccm ? [yamlencode(local.ccm_patch_worker)] : []
 
   cluster_required_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"

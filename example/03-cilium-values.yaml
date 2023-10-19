@@ -64,16 +64,16 @@ prometheus:
 
 # Configure IPAM/PodCIDR
 ipam:
-  # Talos always assign PodCIDR to nodes, hence we should stick to "kubernetes" IPAM mode.
-  mode: kubernetes
-  # mode: cluster-pool
-  # operator:
-  #   clusterPoolIPv4PodCIDRList:
-  #   - ${POD_CIDR}
-  #   clusterPoolIPv4MaskSize: 24
+  # Ensure to not assign PodCIDRs to Nodes via "controllerManager.extraArgs.allocate-node-cidrs" in case you want to use Cilium's default IPAM mode, cluster-pool, instead of 'kubernetes'. Use the provided 'allocate_node_cidrs' Terraform variable to steer this behaviour.
+  #mode: kubernetes
+  mode: cluster-pool
+  operator:
+    clusterPoolIPv4PodCIDRList:
+    - ${POD_CIDR}
 
 # Configure cgroup related configuration
 cgroup:
+  # Cilium doesn't need to mount the cgroup2 filesystem, as it's already there on Talos Linux. Let's simply mount the correct path from Talos.
   autoMount:
     enabled: false
   hostRoot: /sys/fs/cgroup
