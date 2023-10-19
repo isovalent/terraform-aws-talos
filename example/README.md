@@ -13,8 +13,8 @@ These files will need to be updated if changes are made to the customer's enviro
 ```
 terraform --version
 aws --version
-talosctl version
-kubectl version
+talosctl version --client
+kubectl version --client
 ```
 
 2. Create a `terraform.tfvars` file in the current directory containing something similar to the following:
@@ -47,7 +47,7 @@ Once Terraform has completed creating the CuTE it will create a KubeConfig file 
 
 ```bash
 # Working the the K8s cluster:
-TALOSCONFIG=$(terraform output --raw path_to_kubeconfig_file)
+KUBECONFIG=$(terraform output --raw path_to_kubeconfig_file)
 kubectl get nodes
 # Working with talosctl
 TALOSCONFIG=$(terraform output --raw path_to_talosconfig_file)
@@ -86,13 +86,13 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 
 | Name | Version |
 |------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.5.1 |
 
 ### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cilium"></a> [cilium](#module\_cilium) | git::https://github.com/isovalent/terraform-k8s-cilium.git | v1.6 |
+| <a name="module_cilium"></a> [cilium](#module\_cilium) | git::https://github.com/isovalent/terraform-k8s-cilium.git | v1.6.1 |
 | <a name="module_talos"></a> [talos](#module\_talos) | ../ | n/a |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | git::https://github.com/isovalent/terraform-aws-vpc.git | v1.7 |
 
@@ -106,6 +106,7 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_allocate_node_cidrs"></a> [allocate\_node\_cidrs](#input\_allocate\_node\_cidrs) | Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode. | `bool` | `false` | no |
 | <a name="input_cilium_helm_chart"></a> [cilium\_helm\_chart](#input\_cilium\_helm\_chart) | The name of the Helm chart to be used. The naming depends on the Helm repo naming on the local machine. | `string` | `"cilium/cilium"` | no |
 | <a name="input_cilium_helm_values_file_path"></a> [cilium\_helm\_values\_file\_path](#input\_cilium\_helm\_values\_file\_path) | Cilium values file | `string` | `"03-cilium-values.yaml"` | no |
 | <a name="input_cilium_helm_values_override_file_path"></a> [cilium\_helm\_values\_override\_file\_path](#input\_cilium\_helm\_values\_override\_file\_path) | Override Cilium values file | `string` | `""` | no |
@@ -115,7 +116,7 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the cluster. | `string` | `"talos-cute"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/. | `string` | `"1.27.3"` | no |
 | <a name="input_owner"></a> [owner](#input\_owner) | Owner for resource tagging | `string` | n/a | yes |
-| <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for K8s Pods- | `string` | `"100.64.0.0/14"` | no |
+| <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for K8s Pods. Depending on if allocate\_node\_cidrs is set or not, it will either be configured on the controllerManager and assigned to Node resources or to CiliumNode CRs (in case Cilium runs with 'cluster-pool' IPAM mode). | `string` | `"100.64.0.0/14"` | no |
 | <a name="input_pre_cilium_install_script"></a> [pre\_cilium\_install\_script](#input\_pre\_cilium\_install\_script) | A script to be run before installing Cilium. | `string` | `""` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for K8s Services | `string` | `"100.68.0.0/16"` | no |

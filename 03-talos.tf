@@ -10,12 +10,7 @@ module "talos_control_plane_nodes" {
   instance_type               = var.control_plane.instance_type
   subnet_id                   = element(data.aws_subnets.public.ids, count.index)
   associate_public_ip_address = true
-  iam_role_use_name_prefix    = false
-  create_iam_instance_profile = var.ccm ? true : false
-  iam_role_policies = var.ccm ? {
-    "${var.cluster_name}-control-plane-ccm-policy" : aws_iam_policy.control_plane_ccm_policy[0].arn,
-  } : {}
-  tags = merge(var.tags, local.cluster_required_tags)
+  tags                        = merge(var.tags, local.cluster_required_tags)
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
@@ -38,12 +33,7 @@ module "talos_worker_group" {
   instance_type               = each.value.instance_type
   subnet_id                   = element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
   associate_public_ip_address = true
-  iam_role_use_name_prefix    = false
-  create_iam_instance_profile = var.ccm ? true : false
-  iam_role_policies = var.ccm ? {
-    "${var.cluster_name}-worker-ccm-policy" : aws_iam_policy.worker_ccm_policy[0].arn,
-  } : {}
-  tags = merge(each.value.tags, var.tags, local.cluster_required_tags)
+  tags                        = merge(each.value.tags, var.tags, local.cluster_required_tags)
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
@@ -67,9 +57,8 @@ data "talos_machine_configuration" "controlplane" {
   examples           = false
   config_patches = concat(
     local.config_patches_common,
+    [yamlencode(local.common_config_patch)],
     [yamlencode(local.config_cilium_patch)],
-    local.config_patches_controlplane,
-    [yamlencode(local.common_machine_config_patch)],
     [for path in var.control_plane.config_patch_files : file(path)]
   )
 }
@@ -87,9 +76,8 @@ data "talos_machine_configuration" "worker_group" {
   examples           = false
   config_patches = concat(
     local.config_patches_common,
+    [yamlencode(local.common_config_patch)],
     [yamlencode(local.config_cilium_patch)],
-    local.config_patches_worker,
-    [yamlencode(local.common_machine_config_patch)],
     [for path in each.value.config_patch_files : file(path)]
   )
 }

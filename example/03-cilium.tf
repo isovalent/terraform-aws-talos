@@ -1,11 +1,12 @@
 module "cilium" {
-  source = "git::https://github.com/isovalent/terraform-k8s-cilium.git?ref=v1.6"
+  source = "git::https://github.com/isovalent/terraform-k8s-cilium.git?ref=v1.6.1"
 
   depends_on = [
     module.talos
   ]
 
   cilium_helm_release_name                = "cilium"
+  wait_for_total_control_plane_nodes      = true
   cilium_helm_values_file_path            = var.cilium_helm_values_file_path
   cilium_helm_version                     = var.cilium_helm_version
   cilium_helm_chart                       = var.cilium_helm_chart
