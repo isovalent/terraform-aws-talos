@@ -39,6 +39,7 @@ jobs:
           output-file: README.md
           output-method: inject
           output-format: markdown table
+          indention: 3
           git-push: "true"
       - name: Render terraform docs inside the README.md and push changes back to PR branch
         uses: terraform-docs/gh-actions@d1c99433f7a1e5003ef213d70f89aaa47cb0b675
@@ -47,4 +48,5 @@ jobs:
           output-file: README.md
           output-method: inject
           output-format: markdown table
+          indention: 3
           git-push: "true"
