@@ -35,7 +35,7 @@ module "talos" {
 
 ## Terraform Module Doc
 <!-- BEGIN_TF_DOCS -->
-### Requirements
+## Requirements
 
 | Name | Version |
 |------|---------|
@@ -44,7 +44,7 @@ module "talos" {
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
 | <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.4.0-alpha.0 |
 
-### Providers
+## Providers
 
 | Name | Version |
 |------|---------|
@@ -54,7 +54,7 @@ module "talos" {
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
 | <a name="provider_talos"></a> [talos](#provider\_talos) | 0.4.0-alpha.0 |
 
-### Modules
+## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
@@ -64,7 +64,7 @@ module "talos" {
 | <a name="module_talos_control_plane_nodes"></a> [talos\_control\_plane\_nodes](#module\_talos\_control\_plane\_nodes) | terraform-aws-modules/ec2-instance/aws | ~> 5.5 |
 | <a name="module_talos_worker_group"></a> [talos\_worker\_group](#module\_talos\_worker\_group) | terraform-aws-modules/ec2-instance/aws | ~> 5.5 |
 
-### Resources
+## Resources
 
 | Name | Type |
 |------|------|
@@ -86,7 +86,7 @@ module "talos" {
 | [talos_machine_configuration.controlplane](https://registry.terraform.io/providers/siderolabs/talos/0.4.0-alpha.0/docs/data-sources/machine_configuration) | data source |
 | [talos_machine_configuration.worker_group](https://registry.terraform.io/providers/siderolabs/talos/0.4.0-alpha.0/docs/data-sources/machine_configuration) | data source |
 
-### Inputs
+## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -108,7 +108,7 @@ module "talos" {
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC where to place the VMs. | `string` | n/a | yes |
 | <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br>    name               = string<br>    instance_type      = optional(string, "m5.large")<br>    ami_id             = optional(string, null)<br>    num_instances      = optional(number, 2)<br>    config_patch_files = optional(list(string), [])<br>    tags               = optional(map(string), {})<br>  }))</pre> | <pre>[<br>  {<br>    "name": "default"<br>  }<br>]</pre> | no |
 
-### Outputs
+## Outputs
 
 | Name | Description |
 |------|-------------|
