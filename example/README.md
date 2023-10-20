@@ -75,20 +75,20 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 
 ## Terraform Module Doc
 <!-- BEGIN_TF_DOCS -->
-### Requirements
+## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
 
-### Providers
+## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
 
-### Modules
+## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
@@ -96,13 +96,13 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 | <a name="module_talos"></a> [talos](#module\_talos) | ../ | n/a |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | git::https://github.com/isovalent/terraform-aws-vpc.git | v1.7 |
 
-### Resources
+## Resources
 
 | Name | Type |
 |------|------|
 | [random_id.cluster](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 
-### Inputs
+## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -124,7 +124,7 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 | <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.5.3"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The CIDR to use for the VPC. Currently it must be a /16 or /24. | `string` | `"10.0.0.0/16"` | no |
 
-### Outputs
+## Outputs
 
 | Name | Description |
 |------|-------------|
