@@ -43,6 +43,12 @@ variable "disable_kube_proxy" {
   default     = true
 }
 
+variable "allow_workload_on_cp_nodes" {
+  description = "Allow workloads on CP nodes or not. Allowing it means Talos Linux default taints are removed from CP nodes. More details here: https://www.talos.dev/v1.5/talos-guides/howto/workers-on-controlplane/"
+  type        = bool
+  default     = false
+}
+
 variable "talos_version" {
   description = "Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
   type        = string
@@ -66,12 +72,23 @@ variable "kubernetes_version" {
 
 }
 
+variable "controlplane_count" {
+  description = "Defines how many controlplane nodes are deployed in the cluster."
+  default     = 3
+  type        = number
+}
+
+variable "workers_count" {
+  description = "Defines how many worker nodes are deployed in the cluster."
+  default     = 2
+  type        = number
+}
+
 variable "control_plane" {
   description = "Info for control plane that will be created"
   type = object({
     instance_type      = optional(string, "m5.large")
     ami_id             = optional(string, null)
-    num_instances      = optional(number, 3)
     config_patch_files = optional(list(string), [])
     tags               = optional(map(string), {})
   })
@@ -90,7 +107,6 @@ variable "worker_groups" {
     name               = string
     instance_type      = optional(string, "m5.large")
     ami_id             = optional(string, null)
-    num_instances      = optional(number, 2)
     config_patch_files = optional(list(string), [])
     tags               = optional(map(string), {})
   }))
