@@ -77,6 +77,6 @@ module "elb_k8s_elb" {
     timeout             = 5
   }
 
-  number_of_instances = var.control_plane.num_instances
+  number_of_instances = var.controlplane_count
   instances           = module.talos_control_plane_nodes.*.id
 }

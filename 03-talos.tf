@@ -2,7 +2,7 @@ module "talos_control_plane_nodes" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 5.5"
 
-  count = var.control_plane.num_instances
+  count = var.controlplane_count
 
   name                        = "${var.cluster_name}-control-plane-${count.index}"
   ami                         = var.control_plane.ami_id == null ? data.aws_ami.talos.id : var.control_plane.ami_id
@@ -25,7 +25,7 @@ module "talos_worker_group" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 5.5"
 
-  for_each = merge([for info in var.worker_groups : { for index in range(0, info.num_instances) : "${info.name}.${index}" => info }]...)
+  for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   name                        = "${var.cluster_name}-worker-group-${each.value.name}-${trimprefix(each.key, "${each.value.name}.")}"
   ami                         = each.value.ami_id == null ? data.aws_ami.talos.id : each.value.ami_id
@@ -64,7 +64,7 @@ data "talos_machine_configuration" "controlplane" {
 }
 
 data "talos_machine_configuration" "worker_group" {
-  for_each = merge([for info in var.worker_groups : { for index in range(0, info.num_instances) : "${info.name}.${index}" => info }]...)
+  for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   cluster_name       = var.cluster_name
   cluster_endpoint   = "https://${module.elb_k8s_elb.elb_dns_name}"
@@ -83,7 +83,7 @@ data "talos_machine_configuration" "worker_group" {
 }
 
 resource "talos_machine_configuration_apply" "controlplane" {
-  count = var.control_plane.num_instances
+  count = var.controlplane_count
 
   client_configuration        = talos_machine_secrets.this.client_configuration
   machine_configuration_input = data.talos_machine_configuration.controlplane.machine_configuration
@@ -92,7 +92,7 @@ resource "talos_machine_configuration_apply" "controlplane" {
 }
 
 resource "talos_machine_configuration_apply" "worker_group" {
-  for_each = merge([for info in var.worker_groups : { for index in range(0, info.num_instances) : "${info.name}.${index}" => info }]...)
+  for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   client_configuration        = talos_machine_secrets.this.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_group[each.key].machine_configuration

@@ -6,6 +6,7 @@ A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is
 
 - Install Talos Linux OS EC2 VMs
   - For now, it's only supported to deploy the VMs in public subnets with public IPs assigned
+- Support for single- and multi-node cluster architectures
 - Bootstrap Talos Kubernetes cluster with some infrastructure components:
   - [Talos' KubePrism](https://www.talos.dev/v1.5/kubernetes-guides/configuration/kubeprism/) to get an internal endpoint for the KAPI (used for [Cilium Kube-Proxy replacement](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/))
   - [kubernetes-sigs/metrics-server](https://github.com/kubernetes-sigs/metrics-server/)
@@ -91,10 +92,12 @@ module "talos" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_allocate_node_cidrs"></a> [allocate\_node\_cidrs](#input\_allocate\_node\_cidrs) | Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode. | `bool` | `true` | no |
+| <a name="input_allow_workload_on_cp_nodes"></a> [allow\_workload\_on\_cp\_nodes](#input\_allow\_workload\_on\_cp\_nodes) | Allow workloads on CP nodes or not. Allowing it means Talos Linux default taints are removed from CP nodes. More details here: https://www.talos.dev/v1.5/talos-guides/howto/workers-on-controlplane/ | `bool` | `false` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | The ID of the cluster. | `number` | `"1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of cluster | `string` | n/a | yes |
 | <a name="input_config_patch_files"></a> [config\_patch\_files](#input\_config\_patch\_files) | Path to talos config path files that applies to all nodes | `list(string)` | `[]` | no |
-| <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Info for control plane that will be created | <pre>object({<br>    instance_type      = optional(string, "m5.large")<br>    ami_id             = optional(string, null)<br>    num_instances      = optional(number, 3)<br>    config_patch_files = optional(list(string), [])<br>    tags               = optional(map(string), {})<br>  })</pre> | `{}` | no |
+| <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Info for control plane that will be created | <pre>object({<br>    instance_type      = optional(string, "m5.large")<br>    ami_id             = optional(string, null)<br>    config_patch_files = optional(list(string), [])<br>    tags               = optional(map(string), {})<br>  })</pre> | `{}` | no |
+| <a name="input_controlplane_count"></a> [controlplane\_count](#input\_controlplane\_count) | Defines how many controlplane nodes are deployed in the cluster. | `number` | `3` | no |
 | <a name="input_disable_kube_proxy"></a> [disable\_kube\_proxy](#input\_disable\_kube\_proxy) | Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed. | `bool` | `true` | no |
 | <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/. For example '1.27.3'. | `string` | `""` | no |
@@ -106,7 +109,8 @@ module "talos" {
 | <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.5.3"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC where to place the VMs. | `string` | n/a | yes |
-| <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br>    name               = string<br>    instance_type      = optional(string, "m5.large")<br>    ami_id             = optional(string, null)<br>    num_instances      = optional(number, 2)<br>    config_patch_files = optional(list(string), [])<br>    tags               = optional(map(string), {})<br>  }))</pre> | <pre>[<br>  {<br>    "name": "default"<br>  }<br>]</pre> | no |
+| <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br>    name               = string<br>    instance_type      = optional(string, "m5.large")<br>    ami_id             = optional(string, null)<br>    config_patch_files = optional(list(string), [])<br>    tags               = optional(map(string), {})<br>  }))</pre> | <pre>[<br>  {<br>    "name": "default"<br>  }<br>]</pre> | no |
+| <a name="input_workers_count"></a> [workers\_count](#input\_workers\_count) | Defines how many worker nodes are deployed in the cluster. | `number` | `2` | no |
 
 ### Outputs
 
