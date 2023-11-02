@@ -1,5 +1,5 @@
 module "cilium" {
-  source = "git::https://github.com/isovalent/terraform-k8s-cilium.git?ref=v1.6.1"
+  source = "git::https://github.com/isovalent/terraform-k8s-cilium.git?ref=v1.6.2"
 
   depends_on = [
     module.talos
