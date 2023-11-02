@@ -88,15 +88,9 @@ variable "control_plane" {
   description = "Info for control plane that will be created"
   type = object({
     instance_type      = optional(string, "m5.large")
-    ami_id             = optional(string, null)
     config_patch_files = optional(list(string), [])
     tags               = optional(map(string), {})
   })
-
-  validation {
-    condition     = var.control_plane.ami_id != null ? (length(var.control_plane.ami_id) > 4 && substr(var.control_plane.ami_id, 0, 4) == "ami-") : true
-    error_message = "The ami_id value must be a valid AMI id, starting with \"ami-\"."
-  }
 
   default = {}
 }
@@ -106,21 +100,10 @@ variable "worker_groups" {
   type = list(object({
     name               = string
     instance_type      = optional(string, "m5.large")
-    ami_id             = optional(string, null)
     config_patch_files = optional(list(string), [])
     tags               = optional(map(string), {})
   }))
 
-  validation {
-    condition = (
-      alltrue([
-        for wg in var.worker_groups : (
-          wg.ami_id != null ? (length(wg.ami_id) > 4 && substr(wg.ami_id, 0, 4) == "ami-") : true
-        )
-      ])
-    )
-    error_message = "The ami_id value must be a valid AMI id, starting with \"ami-\"."
-  }
   default = [{
     name = "default"
   }]
