@@ -1,11 +1,7 @@
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
 data "aws_ami" "talos" {
   owners      = ["540036508848"] # Sidero Labs
   most_recent = true
-  name_regex  = "^talos-${var.talos_version}-${data.aws_availability_zones.available.id}-amd64$"
+  name_regex  = "^talos-${var.talos_version}-.*-amd64$"
 }
 
 resource "random_string" "workspace_id" {
@@ -16,6 +12,8 @@ resource "random_string" "workspace_id" {
 }
 
 locals {
+
+  ami_id = data.aws_ami.talos.id
 
   path_to_workspace_dir    = "${abspath(path.root)}/.terraform/.workspace-${random_string.workspace_id.id}"
   path_to_kubeconfig_file  = "${local.path_to_workspace_dir}/kubeconfig"
