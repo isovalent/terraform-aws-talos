@@ -4,12 +4,8 @@ module "talos_control_plane_nodes" {
 
   count = var.controlplane_count
 
-  depends_on = [
-    data.aws_ami.talos
-  ]
-
   name                        = "${var.cluster_name}-control-plane-${count.index}"
-  ami                         = var.control_plane.ami_id == null ? data.aws_ami.talos.id : var.control_plane.ami_id
+  ami                         = data.aws_ami.talos.id
   monitoring                  = true
   instance_type               = var.control_plane.instance_type
   subnet_id                   = element(data.aws_subnets.public.ids, count.index)
@@ -29,14 +25,10 @@ module "talos_worker_group" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 5.5"
 
-  depends_on = [
-    data.aws_ami.talos
-  ]
-
   for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   name                        = "${var.cluster_name}-worker-group-${each.value.name}-${trimprefix(each.key, "${each.value.name}.")}"
-  ami                         = each.value.ami_id == null ? data.aws_ami.talos.id : each.value.ami_id
+  ami                         = data.aws_ami.talos.id
   monitoring                  = true
   instance_type               = each.value.instance_type
   subnet_id                   = element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
