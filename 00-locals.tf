@@ -13,8 +13,6 @@ resource "random_string" "workspace_id" {
 
 locals {
 
-  ami_id = data.aws_ami.talos.id
-
   path_to_workspace_dir    = "${abspath(path.root)}/.terraform/.workspace-${random_string.workspace_id.id}"
   path_to_kubeconfig_file  = "${local.path_to_workspace_dir}/kubeconfig"
   path_to_talosconfig_file = "${local.path_to_workspace_dir}/talosconfig"

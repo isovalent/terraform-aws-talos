@@ -10,7 +10,7 @@ variable "cluster_id" {
 }
 
 variable "region" {
-  description = "The region in which to create the RKE2 cluster."
+  description = "The region in which to create the Talos Linux cluster."
   type        = string
 }
 
