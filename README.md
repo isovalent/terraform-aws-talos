@@ -101,7 +101,7 @@ module "talos" {
 | <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/. For example '1.27.3'. | `string` | `""` | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for Pods. Only required in case allocate\_node\_cidrs is set to 'true'. Otherwise, simply configure it inside Cilium's Helm values. | `string` | `"100.64.0.0/14"` | no |
-| <a name="input_region"></a> [region](#input\_region) | The region in which to create the RKE2 cluster. | `string` | n/a | yes |
+| <a name="input_region"></a> [region](#input\_region) | The region in which to create the Talos Linux cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the cluster. | `map(string)` | n/a | yes |
 | <a name="input_talos_api_allowed_cidr"></a> [talos\_api\_allowed\_cidr](#input\_talos\_api\_allowed\_cidr) | The CIDR from which to allow to access the Talos API | `string` | `"0.0.0.0/0"` | no |

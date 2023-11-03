@@ -5,8 +5,7 @@ module "talos_control_plane_nodes" {
   count = var.controlplane_count
 
   name                        = "${var.cluster_name}-control-plane-${count.index}"
-  ami                         = local.ami_id
-  monitoring                  = true
+  ami                         = data.aws_ami.talos.id
   instance_type               = var.control_plane.instance_type
   subnet_id                   = element(data.aws_subnets.public.ids, count.index)
   associate_public_ip_address = true
@@ -28,8 +27,7 @@ module "talos_worker_group" {
   for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   name                        = "${var.cluster_name}-worker-group-${each.value.name}-${trimprefix(each.key, "${each.value.name}.")}"
-  ami                         = local.ami_id
-  monitoring                  = true
+  ami                         = data.aws_ami.talos.id
   instance_type               = each.value.instance_type
   subnet_id                   = element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
   associate_public_ip_address = true
