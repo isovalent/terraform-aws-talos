@@ -1,4 +1,4 @@
-name: Terraform docs and formatting
+name: Talos Conformance
 on:
   pull_request_target:
     types:
