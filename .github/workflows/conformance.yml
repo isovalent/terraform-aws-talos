@@ -1,0 +1,147 @@
+name: Talos Conformance
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  setup-and-test:
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - name: 'v1.15 on Talos v1.5 w KPR'
+            cilium-version: "1.15.0-rc.0"
+            talos-version: 'v1.5.3'
+            kube-proxy: true 
+            kube-proxy-replacement: "strict"
+            socketlb: false 
+            bpf-masquerade: true
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+
+          - name: 'v1.15 on Talos v1.5 w KPR'
+            cilium-version: "1.15.0-rc.0"
+            talos-version: 'v1.5.3'
+            kube-proxy: true 
+            kube-proxy-replacement: "disabled"
+            socketlb: false 
+            bpf-masquerade: true
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+
+          - name: 'v1.14 on Talos v1.5 w KPR'
+            cilium-version: "1.14.7"
+            talos-version: 'v1.5.3'
+            kube-proxy: true 
+            kube-proxy-replacement: "strict"
+            socketlb: false 
+            bpf-masquerade: true
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+
+          - name: 'v1.14 on Talos v1.5 no KPR'
+            cilium-version: "1.14.7"
+            talos-version: 'v1.5.3'
+            kube-proxy: true
+            kube-proxy-replacement: "disabled"
+            socketlb: false
+            bpf-masquerade: true
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Configure AWS credentials from shared services account
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
+          aws-region: us-east-2
+      - uses: hashicorp/setup-terraform@v3
+      - name: Create Talos Cluster 
+        run: |
+          cd test/conformance
+          ./create-ci-env.sh \
+            --kube-proxy ${{ matrix.kube-proxy}} \
+            --talos-version ${{ matrix.talos-version }} \
+            --owner "isovalent/terraform-aws-talos"
+          make apply
+      - name: Install Cilium CLI
+        uses: cilium/cilium-cli@4aa6347c532075df28027772fa1e4ec2f7415341 # v0.15.20
+        with:
+          repository: cilium/cilium-cli
+          release-version: v0.15.20
+          ci-version: ""
+          binary-name: cilium-cli
+          binary-dir: /usr/local/bin
+      - name: Install Cilium Enterprise
+        run: |
+          cd test/conformance
+          export $(make print-kubeconfig)
+          helm repo add isovalent https://helm.isovalent.com
+          helm repo update
+          helm install cilium isovalent/cilium-enterprise \
+            --namespace=kube-system \
+            --version ${{ matrix.cilium-version }} \
+            --values v2.yaml \
+            --set cilium.cluster.name=$(terraform output --raw cluster_name) \
+            --values=values.yaml \
+            --set ipv4.enabled=${{ matrix.ipv4 }} \
+            --set ipv6.enabled=${{ matrix.ipv6 }} \
+            --set bpf.masquerade=${{ matrix.bpf-masquerade }} \
+            --set kubeProxyReplacement=${{ matrix.kube-proxy-replacement }} \
+            --set socketLB.enabled=${{ matrix.socketlb }} \
+            --set ipam.mode=${{ matrix.ipam-mode }} \
+            --set ingressController.enabled=true
+          cilium-cli status --wait
+
+      - name: Run E2E Connectivity Tests 
+        run: |
+          cd test/conformance
+          export $(make print-kubeconfig)
+          kubectl create ns cilium-test 
+          kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
+          kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
+          cilium-cli connectivity test
+
+      - name: Fetch artifacts
+        if: ${{ !success() && steps.run-tests.outcome != 'skipped' }}
+        shell: bash
+        run: |
+          cd test/conformance
+          export $(make print-kubeconfig)
+          kubectl logs -n kube-system ds/cilium
+          kubectl get pods --all-namespaces -o wide
+          cilium-cli status
+          mkdir -p cilium-sysdumps
+          cilium-cli sysdump --output-filename cilium-sysdump-${{ matrix.name }}-final
+
+      - name: Upload artifacts
+        if: ${{ !success() }}
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        with:
+          name: cilium-sysdumps-${{ matrix.name }}
+          path: cilium-sysdump-*.zip
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd test/conformance
+          make destroy 
+

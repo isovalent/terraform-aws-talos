@@ -1,0 +1,95 @@
+bpf:
+  masquerade: true
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+cluster:
+  name: talos-e2e-1-15x10-288
+devices:
+- eth0
+enableIPv4BIGTCP: false
+enableIPv4Masquerade: true
+enableIPv6BIGTCP: false
+enableIPv6Masquerade: false
+extraConfig:
+  allow-localhost: policy
+hostFirewall:
+  enabled: true
+hostPort:
+  enabled: true
+image:
+  pullPolicy: Always
+ingressController:
+  default: true
+  enabled: false
+ipv4:
+  enabled: true
+ipv6:
+  enabled: false
+k8s:
+  requireIPv4PodCIDR: true
+  requireIPv6PodCIDR: false
+kubeProxyReplacement: true
+localRedirectPolicy: true
+nodePort:
+  enabled: true
+operator:
+  prometheus:
+    enabled: false
+  replicas: 2
+  rolloutPods: true
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    seccompProfile:
+      type: RuntimeDefault
+policyAuditMode: false
+policyCIDRMatchMode: nodes
+policyEnforcementMode: default
+prometheus:
+  enabled: true
+rolloutCiliumPods: true
+routingMode: tunnel
+securityContext:
+  capabilities:
+    applySysctlOverwrites:
+    - SYS_ADMIN
+    - SYS_CHROOT
+    - SYS_PTRACE
+    ciliumAgent:
+    - CHOWN
+    - KILL
+    - NET_ADMIN
+    - NET_RAW
+    - IPC_LOCK
+    - SYS_ADMIN
+    - SYS_RESOURCE
+    - PERFMON
+    - BPF
+    - DAC_OVERRIDE
+    - FOWNER
+    - SETGID
+    - SETUID
+    cleanCiliumState:
+    - NET_ADMIN
+    - SYS_ADMIN
+    - SYS_RESOURCE
+    - PERFMON
+    - BPF
+    mountCgroup:
+    - SYS_ADMIN
+    - SYS_CHROOT
+    - SYS_PTRACE
+  privileged: false
+  runAsUser: 0
+serviceAccounts:
+  cilium:
+    name: cilium
+  operator:
+    name: cilium-operator
+tunnel: vxlan
+tunnelProtocol: vxlan
+

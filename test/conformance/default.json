@@ -1,0 +1,14 @@
+{
+  "private": [
+    { "id": 1, "body": "secret information" }
+  ],
+  "public": [
+    { "id": 1, "body": "public information" }
+  ],
+  "auth-header-required": [
+    { "id": 1, "body": "super secret information" }
+  ],
+  "": [
+    { "id": 1, "body": "my home page" }
+  ]
+}
