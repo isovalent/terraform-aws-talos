@@ -19,4 +19,4 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Init Terraform
         run: |
-          make -C example
+          make -C example init
