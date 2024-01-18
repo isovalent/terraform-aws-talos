@@ -1,0 +1,14 @@
+#!/bin/bash
+
+for i in {1..10}; do
+	echo "Checking for non running Pods"
+	count=$(kubectl get pod --field-selector status.phase!=Running -A -o json | jq '.items | length')
+	if [ ${count} == "0" ]; then
+		echo "Done (count=${count})!"
+		exit 0
+	fi
+	echo "Not ready (count=${count}), waiting 30s..."
+	sleep 30
+done
+echo "Timed out waiting"
+exit 1

@@ -1,10 +1,16 @@
 /.workspace-*/
 .terraform/
+*/.terraform/*
+*/.terraform.lock.hcl
 .terraform.lock.hcl
+*/.terraform.tfstate.lock.info
 .terraform.tfstate.lock.info
 .vscode/
+*/terraform.tfstate*
 terraform.tfstate*
+*/terraform.tfvars
 terraform.tfvars
 tf/
 *.DS_Store*
 .timestamp
+test/conformance/env.tfvars

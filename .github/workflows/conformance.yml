@@ -1,0 +1,213 @@
+name: Talos Conformance
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  schedule:
+    # Run weekly.
+    - cron: '0 9 * * 1'
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  setup-and-test:
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        cilium:
+          # renovate: datasource=github-releases depName=cilium/cilium
+          - 'v1.15.1'
+          # renovate: datasource=github-releases depName=cilium/cilium
+          - 'v1.14.5'
+        talos:
+          # renovate: datasource=github-releases depName=siderolabs/talos
+          - 'v1.6.5'
+          # renovate: datasource=github-releases depName=siderolabs/talos
+          - 'v1.5.4'
+        config:
+          # --- Cilium v1.15 ---
+          - name: 'Vanilla'
+            kube-proxy: false
+            kube-proxy-replacement: "true"
+            socketlb: false 
+            bpf-masquerade: true
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+            encryption-enabled: false
+            encryption-type: ipsec
+            tunnel-mode: vxlan
+            nodeport: true
+
+          - name: 'Wireguard'
+            kube-proxy: true 
+            kube-proxy-replacement: "true"
+            socketlb: false 
+            bpf-masquerade: true 
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+            encryption-enabled: true
+            encryption-type: wireguard
+            tunnel-mode: vxlan
+            nodeport: true 
+
+          - name: 'IPSEC'
+            kube-proxy: true 
+            kube-proxy-replacement: "false"
+            socketlb: true
+            bpf-masquerade: false
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+            encryption-enabled: true
+            encryption-type: ipsec 
+            tunnel-mode: vxlan
+            nodeport: false
+
+          - name: 'No KPR and w/ BPF Masq'
+            kube-proxy: true
+            kube-proxy-replacement: "false"
+            socketlb: true
+            bpf-masquerade: true
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+            encryption-enabled: false
+            tunnel-mode: vxlan
+            nodeport: true 
+
+          - name: 'Clusterpool IPAM Mode'
+            kube-proxy: false
+            kube-proxy-replacement: "true"
+            socketlb: false 
+            bpf-masquerade: true
+            ipam-mode: 'cluster-pool'
+            ipv4: true
+            ipv6: false
+            encryption-enabled: false
+            encryption-type: ipsec
+            tunnel-mode: vxlan
+            nodeport: true
+
+          - name: 'With Geneve Tunnel'
+            kube-proxy: false
+            kube-proxy-replacement: "true"
+            socketlb: false 
+            bpf-masquerade: true
+            ipam-mode: 'kubernetes'
+            ipv4: true
+            ipv6: false
+            encryption-enabled: false
+            encryption-type: ipsec
+            tunnel-mode: geneve 
+            nodeport: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Configure AWS credentials from shared services account
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
+          aws-region: us-east-2
+      - uses: hashicorp/setup-terraform@v3
+      - name: Create Talos Cluster 
+        run: |
+          cd test/conformance
+          ./create-ci-env.sh \
+            --kube-proxy ${{ matrix.config.kube-proxy}} \
+            --talos-version ${{ matrix.talos }} \
+            --owner "isovalent/terraform-aws-talos"
+          make apply
+      - name: Install Cilium CLI
+        uses: cilium/cilium-cli@4aa6347c532075df28027772fa1e4ec2f7415341 # v0.15.20
+        with:
+          repository: cilium/cilium-cli
+          release-version: v0.15.20
+          ci-version: ""
+          binary-name: cilium-cli
+          binary-dir: /usr/local/bin
+      - name: Install Cilium
+        run: |
+          cd test/conformance
+          export $(make print-kubeconfig)
+          kubectl create -n kube-system secret generic cilium-ipsec-keys \
+            --from-literal=keys="3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null | xxd -p -c 64)) 128"
+          kubectl create -n kube-system -f ipmasq-config.yaml
+          cilium-cli install --version="${{ matrix.cilium }}" \
+            --values=values.yaml \
+            --set ipv4.enabled=${{ matrix.config.ipv4 }} \
+            --set ipv6.enabled=${{ matrix.config.ipv6 }} \
+            --set bpf.masquerade=${{ matrix.config.bpf-masquerade }} \
+            --set kubeProxyReplacement=${{ matrix.config.kube-proxy-replacement }} \
+            --set socketLB.enabled=${{ matrix.config.socketlb }} \
+            --set ipam.mode=${{ matrix.config.ipam-mode }} \
+            --set ingressController.enabled=true \
+            --set encryption.enabled=${{ matrix.config.encryption-enabled }} \
+            --set encryption.type=${{ matrix.config.encryption-type }} \
+            --set tunnelProtocol=${{ matrix.config.tunnel-mode }} \
+            --set nodePort.enabled=${{ matrix.config.nodeport }}
+          cilium-cli status --wait
+
+      - name: Run E2E Connectivity Tests 
+        run: |
+          cd test/conformance
+          export $(make print-kubeconfig)
+          ./wait
+          kubectl create ns cilium-test 
+          kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
+          kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
+          cilium-cli connectivity test 
+
+      - name: Fetch artifacts
+        if: ${{ !success() && steps.run-tests.outcome != 'skipped' }}
+        shell: bash
+        run: |
+          cd test/conformance
+          export $(make print-kubeconfig)
+          kubectl get svc -o wide -A
+          kubectl get pods --all-namespaces -o wide
+          cilium-cli status
+          mkdir -p cilium-sysdumps
+          cilium-cli sysdump --output-filename cilium-sysdump-${{ github.run_id }}-${{ github.run_number }}
+
+      - name: Upload artifacts
+        if: ${{ !success() }}
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        with:
+          name: cilium-sysdumps-${{ github.run_id }}-${{ github.run_number }}
+          path: ./test/conformance/cilium-sysdump-*.zip
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd test/conformance
+          make destroy 
+
+  finalize:
+    runs-on: ubuntu-22.04
+    if: always()
+    permissions:
+      id-token: write
+      contents: read
+    needs: setup-and-test
+    steps:
+      - name: Send notification
+        uses: slackapi/slack-github-action@6c661ce58804a1a20f6dc5fbee7f0381b469e001 # v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C02T57KV69Y'
+          slack-message: "Talos AWS Terraform: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ needs.setup-and-test.result == 'success' && 'workflow passed!> :tada::tada::tada:' || 'workflow failed!> :rotating_light::rotating_light::rotating_light:' }}"
+
