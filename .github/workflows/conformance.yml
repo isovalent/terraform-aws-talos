@@ -1,0 +1,22 @@
+name: Talos Conformance E2E
+
+jobs:
+  setup-and-test:
+    # runs-on:
+    name: 'Setup & Test'
+    runs-on: ubuntu-latest-4cores-16gb
+    name: 'Setup & Test'
+    env:
+      json_name: 'Setup & Test'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 'kube-proxy replacement'
+            kube-proxy: 'iptables'
+            kpr: 'false'
+            tunnel: 'vxlan'
+      steps:
+      - name: test 
+        run: echo "success!"
+
