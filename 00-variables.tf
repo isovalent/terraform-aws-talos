@@ -9,6 +9,17 @@ variable "cluster_id" {
   type        = number
 }
 
+variable "cluster_architecture" {
+  description = "Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control_plane.instance_type and worker_groups.instance_type with an ARM64-based instance type like 'm7g.large'."
+  type        = string
+  default     = "amd64"
+
+  validation {
+    condition     = can(regex("^a(rm|md)64$", var.cluster_architecture))
+    error_message = "The cluster_architecture value must be a valid architecture. Allowed values are 'arm64' and 'amd64'."
+  }
+}
+
 variable "region" {
   description = "The region in which to create the Talos Linux cluster."
   type        = string
@@ -52,7 +63,7 @@ variable "allow_workload_on_cp_nodes" {
 variable "talos_version" {
   description = "Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
   type        = string
-  default     = "v1.5.3"
+  default     = "v1.6.1"
 
   validation {
     condition     = can(regex("^v\\d+\\.\\d+\\.\\d+$", var.talos_version))
@@ -61,7 +72,7 @@ variable "talos_version" {
 }
 
 variable "kubernetes_version" {
-  description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/. For example '1.27.3'."
+  description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/. For example '1.27.6'."
   type        = string
   default     = ""
 
