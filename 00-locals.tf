@@ -1,7 +1,12 @@
 data "aws_ami" "talos" {
   owners      = ["540036508848"] # Sidero Labs
   most_recent = true
-  name_regex  = "^talos-${var.talos_version}-.*-amd64$"
+  name_regex  = "^talos-${var.talos_version}-.*-${var.cluster_architecture}$"
+
+  filter {
+    name   = "architecture"
+    values = [local.instance_architecture]
+  }
 }
 
 resource "random_string" "workspace_id" {
@@ -13,6 +18,7 @@ resource "random_string" "workspace_id" {
 
 locals {
 
+  instance_architecture    = var.cluster_architecture == "amd64" ? "x86_64" : var.cluster_architecture
   path_to_workspace_dir    = "${abspath(path.root)}/.terraform/.workspace-${random_string.workspace_id.id}"
   path_to_kubeconfig_file  = "${local.path_to_workspace_dir}/kubeconfig"
   path_to_talosconfig_file = "${local.path_to_workspace_dir}/talosconfig"

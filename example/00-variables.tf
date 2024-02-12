@@ -11,6 +11,37 @@ variable "cluster_id" {
   type        = number
 }
 
+variable "cluster_architecture" {
+  description = "Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control_plane.instance_type and worker_groups.instance_type with an ARM64-based instance type like 'm7g.large'."
+  type        = string
+  default     = "amd64"
+}
+
+variable "control_plane" {
+  description = "Info for control plane that will be created"
+  type = object({
+    instance_type      = optional(string, "m5.large")
+    config_patch_files = optional(list(string), [])
+    tags               = optional(map(string), {})
+  })
+
+  default = {}
+}
+
+variable "worker_groups" {
+  description = "List of node worker node groups to create"
+  type = list(object({
+    name               = string
+    instance_type      = optional(string, "m5.large")
+    config_patch_files = optional(list(string), [])
+    tags               = optional(map(string), {})
+  }))
+
+  default = [{
+    name = "default"
+  }]
+}
+
 variable "region" {
   description = "The region in which to create the cluster."
   type        = string
@@ -38,13 +69,13 @@ variable "tags" {
 
 # talos module
 variable "talos_version" {
-  default     = "v1.5.3"
+  default     = "v1.6.1"
   type        = string
   description = "Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
 }
 
 variable "kubernetes_version" {
-  default     = "1.27.3"
+  default     = "1.27.6"
   type        = string
   description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/."
 }
@@ -81,7 +112,7 @@ variable "cilium_helm_chart" {
 }
 
 variable "cilium_helm_version" {
-  default     = "1.14.3"
+  default     = "1.14.6"
   type        = string
   description = "The version of the used Helm chart. Check https://github.com/cilium/cilium/releases to see available versions."
 }
