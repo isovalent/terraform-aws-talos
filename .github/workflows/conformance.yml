@@ -117,7 +117,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Configure AWS credentials from shared services account
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
           aws-region: us-east-2
