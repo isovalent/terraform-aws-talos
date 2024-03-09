@@ -1,4 +1,8 @@
-name: Talos Conformance
+# Due to difference in configuring v1.13 and v1.14+ we split v1.13 into
+# seperate workflow.
+# TODO: We can delete this and rely on just the primary conformance.yml to
+# test v1.14/v1.15/v1.16 upon the release of v1.16.
+name: Talos Conformance (v1.13)
 on:
   pull_request_target:
     types:
@@ -20,24 +24,21 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 2
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
-          - 'v1.15.1'
-          # renovate: datasource=github-releases depName=cilium/cilium
-          - 'v1.14.5'
+          - 'v1.13.10'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.6.5'
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.5.4'
         config:
-          # --- Cilium v1.15 ---
           - name: 'Vanilla'
             kube-proxy: false
-            kube-proxy-replacement: "true"
-            socketlb: false 
+            kube-proxy-replacement: "strict"
+            socketlb: false
             bpf-masquerade: true
             ipam-mode: 'kubernetes'
             ipv4: true
@@ -46,36 +47,42 @@ jobs:
             encryption-type: ipsec
             tunnel-mode: vxlan
             nodeport: true
+            l7: true
+            ingress: true
 
           - name: 'Wireguard'
-            kube-proxy: true 
-            kube-proxy-replacement: "true"
-            socketlb: false 
-            bpf-masquerade: true 
+            kube-proxy: true
+            kube-proxy-replacement: "partial"
+            socketlb: false
+            bpf-masquerade: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
             encryption-enabled: true
             encryption-type: wireguard
             tunnel-mode: vxlan
-            nodeport: true 
+            nodeport: true
+            l7: false
+            ingress: false
 
           - name: 'IPSEC'
-            kube-proxy: true 
-            kube-proxy-replacement: "false"
+            kube-proxy: true
+            kube-proxy-replacement: "partial"
             socketlb: true
             bpf-masquerade: false
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
             encryption-enabled: true
-            encryption-type: ipsec 
+            encryption-type: ipsec
             tunnel-mode: vxlan
             nodeport: false
+            l7: false
+            ingress: false
 
           - name: 'No KPR and w/ BPF Masq'
             kube-proxy: true
-            kube-proxy-replacement: "false"
+            kube-proxy-replacement: "partial"
             socketlb: true
             bpf-masquerade: true
             ipam-mode: 'kubernetes'
@@ -83,12 +90,14 @@ jobs:
             ipv6: false
             encryption-enabled: false
             tunnel-mode: vxlan
-            nodeport: true 
+            nodeport: true
+            l7: true
+            ingress: false
 
           - name: 'Clusterpool IPAM Mode'
             kube-proxy: false
-            kube-proxy-replacement: "true"
-            socketlb: false 
+            kube-proxy-replacement: "strict"
+            socketlb: false
             bpf-masquerade: true
             ipam-mode: 'cluster-pool'
             ipv4: true
@@ -97,19 +106,23 @@ jobs:
             encryption-type: ipsec
             tunnel-mode: vxlan
             nodeport: true
+            l7: true
+            ingress: false
 
           - name: 'With Geneve Tunnel'
             kube-proxy: false
-            kube-proxy-replacement: "true"
-            socketlb: false 
+            kube-proxy-replacement: "strict"
+            socketlb: false
             bpf-masquerade: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
             encryption-enabled: false
             encryption-type: ipsec
-            tunnel-mode: geneve 
+            tunnel-mode: geneve
             nodeport: true
+            l7: true
+            ingress: false
 
     steps:
       - name: Checkout
@@ -122,7 +135,7 @@ jobs:
           role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
           aws-region: us-east-2
       - uses: hashicorp/setup-terraform@v3
-      - name: Create Talos Cluster 
+      - name: Create Talos Cluster
         run: |
           cd test/conformance
           ./create-ci-env.sh \
@@ -153,19 +166,20 @@ jobs:
             --set kubeProxyReplacement=${{ matrix.config.kube-proxy-replacement }} \
             --set socketLB.enabled=${{ matrix.config.socketlb }} \
             --set ipam.mode=${{ matrix.config.ipam-mode }} \
-            --set ingressController.enabled=true \
+            --set ingressController.enabled=${{ matrix.config.ingress }} \
             --set encryption.enabled=${{ matrix.config.encryption-enabled }} \
             --set encryption.type=${{ matrix.config.encryption-type }} \
             --set tunnelProtocol=${{ matrix.config.tunnel-mode }} \
-            --set nodePort.enabled=${{ matrix.config.nodeport }}
+            --set nodePort.enabled=${{ matrix.config.nodeport }} \
+            --set l7Proxy=${{ matrix.config.l7 }}
           cilium-cli status --wait
 
-      - name: Run E2E Connectivity Tests 
+      - name: Run E2E Connectivity Tests
         run: |
           cd test/conformance
           export $(make print-kubeconfig)
           ./wait
-          kubectl create ns cilium-test 
+          kubectl create ns cilium-test
           kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
           kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
           cilium-cli connectivity test 
@@ -193,7 +207,7 @@ jobs:
         if: always()
         run: |
           cd test/conformance
-          make destroy 
+          make destroy
 
   finalize:
     runs-on: ubuntu-22.04
