@@ -128,6 +128,7 @@ jobs:
           ./create-ci-env.sh \
             --kube-proxy ${{ matrix.config.kube-proxy}} \
             --talos-version ${{ matrix.talos }} \
+            --pr ${{ github.run_number }} \
             --owner "isovalent/terraform-aws-talos"
           make apply
       - name: Install Cilium CLI
@@ -168,7 +169,7 @@ jobs:
           kubectl create ns cilium-test 
           kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
           kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
-          cilium-cli connectivity test 
+          cilium-cli connectivity test --collect-sysdump-on-failure
 
       - name: Fetch artifacts
         if: ${{ !success() && steps.run-tests.outcome != 'skipped' }}
