@@ -2,11 +2,14 @@
 # seperate workflow.
 # TODO: We can delete this and rely on just the primary conformance.yml to
 # test v1.14/v1.15/v1.16 upon the release of v1.16.
-name: Talos Conformance (v1.13)
+name: Talos Conformance (v1.13) (PR)
 on:
-  schedule:
-    # Run weekly.
-    - cron: '0 9 * * 1'
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  pull_request:
 jobs:
   setup-and-test:
     runs-on: ubuntu-22.04
@@ -40,81 +43,6 @@ jobs:
             nodeport: true
             l7: true
             ingress: true
-
-          - name: 'Wireguard'
-            kube-proxy: true
-            kube-proxy-replacement: "partial"
-            socketlb: false
-            bpf-masquerade: true
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: true
-            encryption-type: wireguard
-            tunnel-mode: vxlan
-            nodeport: true
-            l7: false
-            ingress: false
-
-          - name: 'IPSEC'
-            kube-proxy: true
-            kube-proxy-replacement: "partial"
-            socketlb: true
-            bpf-masquerade: false
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: true
-            encryption-type: ipsec
-            tunnel-mode: vxlan
-            nodeport: false
-            l7: false
-            ingress: false
-
-          - name: 'No KPR and w/ BPF Masq'
-            kube-proxy: true
-            kube-proxy-replacement: "partial"
-            socketlb: true
-            bpf-masquerade: true
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: false
-            tunnel-mode: vxlan
-            nodeport: true
-            l7: true
-            ingress: false
-
-          - name: 'Clusterpool IPAM Mode'
-            kube-proxy: false
-            kube-proxy-replacement: "strict"
-            socketlb: false
-            bpf-masquerade: true
-            ipam-mode: 'cluster-pool'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: false
-            encryption-type: ipsec
-            tunnel-mode: vxlan
-            nodeport: true
-            l7: true
-            ingress: false
-
-          - name: 'With Geneve Tunnel'
-            kube-proxy: false
-            kube-proxy-replacement: "strict"
-            socketlb: false
-            bpf-masquerade: true
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: false
-            encryption-type: ipsec
-            tunnel-mode: geneve
-            nodeport: true
-            l7: true
-            ingress: false
-
     steps:
       - name: Checkout
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
@@ -200,20 +128,4 @@ jobs:
         run: |
           cd test/conformance
           make destroy
-
-  finalize:
-    runs-on: ubuntu-22.04
-    if: always()
-    permissions:
-      id-token: write
-      contents: read
-    needs: setup-and-test
-    steps:
-      - name: Send notification
-        uses: slackapi/slack-github-action@6c661ce58804a1a20f6dc5fbee7f0381b469e001 # v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: 'C02T57KV69Y'
-          slack-message: "Talos AWS Terraform: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ needs.setup-and-test.result == 'success' && 'workflow passed!> :tada::tada::tada:' || 'workflow failed!> :rotating_light::rotating_light::rotating_light:' }}"
 
