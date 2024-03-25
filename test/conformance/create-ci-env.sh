@@ -80,9 +80,7 @@ if [ -z "$kube_proxy" ] && [ -z "$talos_version" ] && [ -z "$owner" ]; then
     usage
 fi
 
-
-pr_name=$(head -c 15 <<< ${pr_name})
-num=$(head -c 3 <<< ${RANDOM})
+id=$(md5sum <<< ${pr_name} | head -c 5)
 
 disable_kube_proxy=false
 if [ ${kube_proxy} == "false" ]; then
@@ -90,7 +88,7 @@ if [ ${kube_proxy} == "false" ]; then
 fi
 
 cat > env.tfvars << EOF
-cluster_name = "talos-e2e-${pr_name}-${num}"
+cluster_name = "talos-e2e-${id}"
 region = "us-east-2"
 owner = "${owner}"
 talos_version = "${talos_version}"
