@@ -12,3 +12,8 @@ output "elb_dns_name" {
   description = "Public ELB DNS name."
   value       = module.elb_k8s_elb.elb_dns_name
 }
+
+output "cluster_name" {
+  description = "Name of cluster"
+  value       = var.cluster_name
+}
