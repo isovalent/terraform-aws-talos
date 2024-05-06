@@ -1,3 +1,13 @@
 {
-    "extends": ["config:recommended"]
+  "extends": ["config:recommended"],
+  "customManagers": [
+      {
+        "customType": "regex",
+        "description": "Update GitHub release dependencies",
+        "fileMatch": ["(^|/|\\.)conformance.*\\.yml$"],
+        "matchStrings": [
+          "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)$"
+        ]
+      }
+    ]
 }
