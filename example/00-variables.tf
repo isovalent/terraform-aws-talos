@@ -69,15 +69,15 @@ variable "tags" {
 
 # talos module
 variable "talos_version" {
-  default     = "v1.6.5"
+  default     = "v1.7.1"
   type        = string
   description = "Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
 }
 
 variable "kubernetes_version" {
-  default     = "1.27.6"
+  default     = "1.29.3"
   type        = string
-  description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/."
+  description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/."
 }
 
 variable "service_cidr" {
@@ -112,7 +112,7 @@ variable "cilium_helm_chart" {
 }
 
 variable "cilium_helm_version" {
-  default     = "1.14.6"
+  default     = "1.15.4"
   type        = string
   description = "The version of the used Helm chart. Check https://github.com/cilium/cilium/releases to see available versions."
 }

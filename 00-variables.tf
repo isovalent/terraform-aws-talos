@@ -63,7 +63,7 @@ variable "allow_workload_on_cp_nodes" {
 variable "talos_version" {
   description = "Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
   type        = string
-  default     = "v1.6.1"
+  default     = "v1.7.1"
 
   validation {
     condition     = can(regex("^v\\d+\\.\\d+\\.\\d+$", var.talos_version))
@@ -72,7 +72,7 @@ variable "talos_version" {
 }
 
 variable "kubernetes_version" {
-  description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/v1.5/introduction/support-matrix/. For example '1.27.6'."
+  description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/. For example '1.29.3'."
   type        = string
   default     = ""
 
