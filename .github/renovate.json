@@ -6,8 +6,9 @@
         "description": "Update GitHub release dependencies",
         "fileMatch": ["(^|/|\\.)conformance.*\\.yml$"],
         "matchStrings": [
-          "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)$"
-        ]
+          "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)\\s*?versioning=(?<versioning>.*?)$"
+        ],
+        "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
       }
     ]
 }
