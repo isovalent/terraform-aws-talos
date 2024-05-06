@@ -1,13 +1,22 @@
 {
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
+  "labels": [
+    "dependencies"
+  ],
   "customManagers": [
-      {
-        "customType": "regex",
-        "description": "Update GitHub release dependencies",
-        "fileMatch": ["(^|/|\\.)conformance.*\\.yml$"],
-        "matchStrings": [
-          "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)\\s*?[\r\n]+\\s*-\\s*(?<currentValue>'v?\\d+\\.\\d+\\.\\d+'\\s*)$"
-        ]
-      }
-    ]
+    {
+      "customType": "regex",
+      "description": "Update GitHub release dependencies",
+      "fileMatch": [
+        "(^|/|\\.)conformance.*\\.yml$"
+      ],
+      "datasourceTemplate": "github-releases",
+      "matchStrings": [
+        "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)\\s*?[\\r\\n]+\\s*-\\s*(?<currentValue>'v?\\d+\\.\\d+\\.\\d+'\\s*)$"
+      ]
+    }
+  ]
 }
