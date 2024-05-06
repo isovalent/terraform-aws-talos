@@ -13,9 +13,9 @@ jobs:
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
-          - 'v1.15.1'
+          - '1.15.1'
           # renovate: datasource=github-releases depName=cilium/cilium
-          - 'v1.14.5'
+          - '1.14.5'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.6.5'
@@ -76,7 +76,7 @@ jobs:
           kubectl create -n kube-system secret generic cilium-ipsec-keys \
             --from-literal=keys="3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null | xxd -p -c 64)) 128"
           kubectl create -n kube-system -f ipmasq-config.yaml
-          cilium-cli install --version="${{ matrix.cilium }}" \
+          cilium-cli install --version="v${{ matrix.cilium }}" \
             --values=values.yaml \
             --set ipv4.enabled=${{ matrix.config.ipv4 }} \
             --set ipv6.enabled=${{ matrix.config.ipv6 }} \
