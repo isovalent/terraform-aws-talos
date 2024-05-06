@@ -15,7 +15,7 @@
       ],
       "datasourceTemplate": "github-releases",
       "matchStrings": [
-        "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)\\s*?[\\r\\n]+\\s*-\\s*(?<currentValue>'v?\\d+\\.\\d+\\.\\d+'\\s*)$"
+        "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)\\s*?[\\r\\n]+\\s*-\\s*['|\"]?(?<currentValue>v?\\d+\\.\\d+\\.\\d+)['|\"]?\\s*$"
       ]
     }
   ]
