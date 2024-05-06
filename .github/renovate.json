@@ -1,8 +1,13 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    ":dependencyDashboard"
+    ":dependencyDashboard",
+    ":automergePatch",
+    ":automergePr",
+    ":gitSignOff"
   ],
+  "gitAuthor": "renovate[bot] <bot@renovateapp.com>",
   "labels": [
     "dependencies"
   ],
