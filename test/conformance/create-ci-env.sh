@@ -4,10 +4,15 @@ if [ -f env.tfvars ]; then
 	echo "env.tfvars already exists, please cleanup cluster and remove this file"
 fi
 
-pr_name=""
 kube_proxy=""
 talos_version=""
+cilium_version=""
 owner=""
+
+run_id=
+num_no=
+
+test=
 
 # Function to display usage
 usage() {
@@ -18,12 +23,30 @@ usage() {
 # Parse command line options
 while [ $# -gt 0 ]; do
     case "$1" in
-        --pr)
+        --run-id)
             shift
             if [ -n "$1" ] && [ ${1:0:1} != "-" ]; then
-                pr_name="$1"
+                run_id="$1"
             else
-                echo "Error: Missing or invalid argument for --pr" >&2
+                echo "Error: Missing or invalid argument for --run-id" >&2
+                usage
+            fi
+            ;;
+        --run-no)
+            shift
+            if [ -n "$1" ] && [ ${1:0:1} != "-" ]; then
+                run_no="$1"
+            else
+                echo "Error: Missing or invalid argument for --run-no" >&2
+                usage
+            fi
+            ;;
+        --test)
+            shift
+            if [ -n "$1" ] && [ ${1:0:1} != "-" ]; then
+                test="$1"
+            else
+                echo "Error: Missing or invalid argument for --test" >&2
                 usage
             fi
             ;;
@@ -42,6 +65,15 @@ while [ $# -gt 0 ]; do
                 talos_version="$1"
             else
                 echo "Error: Missing or invalid argument for --version" >&2
+                usage
+            fi
+            ;;
+        --cilium-version)
+            shift
+            if [ -n "$1" ] && [ ${1:0:1} != "-" ]; then
+                cilium_version="$1"
+            else
+                echo "Error: Missing or invalid argument for --cilium-version" >&2
                 usage
             fi
             ;;
@@ -80,7 +112,7 @@ if [ -z "$kube_proxy" ] && [ -z "$talos_version" ] && [ -z "$owner" ]; then
     usage
 fi
 
-id=$(md5sum <<< ${pr_name} | head -c 5)
+id=$(echo ${run_id}-${run_no}-${RANDOM} | md5sum | head -c 5)
 
 disable_kube_proxy=false
 if [ ${kube_proxy} == "false" ]; then
@@ -93,8 +125,11 @@ region = "us-east-2"
 owner = "${owner}"
 talos_version = "${talos_version}"
 disable_kube_proxy = ${disable_kube_proxy} 
+run_id = "${run_id}"
+run_number = "${run_no}"
+test_name = "${test}"
+cilium_version = "${cilium_version}"
 EOF
 
 cat env.tfvars
-
 

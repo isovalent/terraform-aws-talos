@@ -4,7 +4,11 @@ locals {
   tags = merge(
     tomap({
       "expiry" : local.expiry,
-      "owner" : var.owner
+      "owner" : var.owner,
+      "run_id" : "https://github.com/isovalent/terraform-aws-talos/actions/runs/${var.run_id}",
+      "run_number" : var.run_number,
+      "test_name" : var.test_name,
+      "cilium_version" : var.cilium_version,
     }),
     var.tags
   )
