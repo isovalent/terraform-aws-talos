@@ -132,7 +132,10 @@ jobs:
           ./create-ci-env.sh \
             --kube-proxy ${{ matrix.config.kube-proxy}} \
             --talos-version ${{ matrix.talos }} \
-            --pr "${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_number}}-${{ github.run_attempt }}-${{ matrix.name }}-${{ matrix.cilium }}-${{ matrix.talos }}" \
+            --test ${{ matrix.config.name }} \
+            --run-id ${{ github.run_id }} \
+            --run-no ${{ github.run_number }} \
+            --cilium-version ${{ matrix.cilium }} \
             --owner "isovalent/terraform-aws-talos"
           make apply
       - name: Install Cilium CLI

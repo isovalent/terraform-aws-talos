@@ -69,3 +69,19 @@ variable "pod_cidr" {
 variable "disable_kube_proxy" {
   type = bool
 }
+
+variable "run_id" {
+  type = string
+}
+
+variable "run_number" {
+  type = string
+}
+
+variable "test_name" {
+  type = string
+}
+
+variable "cilium_version" {
+  type = string
+}
