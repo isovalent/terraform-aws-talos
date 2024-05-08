@@ -22,9 +22,9 @@ jobs:
           - '1.13.10'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.6.5'
+          - 'v1.7.1'
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.5.4'
+          - 'v1.6.5'
         config:
           - name: 'Vanilla'
             kube-proxy: false
