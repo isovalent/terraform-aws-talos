@@ -9,7 +9,45 @@
   ],
   "gitAuthor": "renovate[bot] <bot@renovateapp.com>",
   "labels": [
-    "dependencies"
+    "kind/enhancement",
+    "release-note/misc"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true,
+  "separateMinorPatch": true,
+  "schedule": [
+    "on monday and friday"
+  ],
+  "packageRules": [
+    {
+      "matchDepNames": ["cilium/cilium"],
+      "groupName": "Cilium",
+      "matchUpdateTypes": ["patch"]
+    },
+    {
+      "description": "Let's do our Cilium 1.13 testing with the latest patch release. Don't update major or minor.",
+      "matchDepNames": ["cilium/cilium"],
+      "matchFileNames": [
+        ".github/workflows/conformance-13*"
+      ],
+      "groupName": "Cilium 13",
+      "allowedVersions": "/^v1\\.13\\.[0-9]+$/"
+    },
+    {
+      "matchDepNames": ["siderolabs/talos"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "Talos"
+    },
+    {
+      "description": "Do not allow any updates for major.minor, they will be done by maintainers",
+      "matchFileNames": [
+        ".github/workflows/conformance*"
+      ],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    }
   ],
   "customManagers": [
     {
@@ -20,7 +58,7 @@
       ],
       "datasourceTemplate": "github-releases",
       "matchStrings": [
-        "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)\\s*?[\\r\\n]+\\s*-\\s*['|\"]?(?<currentValue>v?\\d+\\.\\d+\\.\\d+)['|\"]?\\s*$"
+        "#\\s*renovate:\\s*(datasource=(?<datasource>.*?))?\\s*depName=(?<depName>.*?)\\s+.+-\\s*['|\"]?(?<currentValue>v?\\d+\\.\\d+\\.\\d+)['|\"]?"
       ]
     }
   ]
