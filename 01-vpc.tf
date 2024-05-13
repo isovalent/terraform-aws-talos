@@ -31,3 +31,4 @@ resource "null_resource" "wait_for_public_subnets" {
     command = "${path.module}/scripts/wait-for-public-subnets.sh ${data.aws_vpc.vpc.id} ${data.aws_region.current.name}"
   }
 }
+
