@@ -52,7 +52,7 @@ jobs:
           ./create-ci-env.sh \
             --kube-proxy ${{ matrix.config.kube-proxy}} \
             --talos-version ${{ matrix.talos }} \
-            --test ${{ matrix.config.name }} \
+            --test $(echo "${{ matrix.config.name }}" | sed 's/ /_/g') \
             --run-id ${{ github.run_id }} \
             --run-no ${{ github.run_number }} \
             --cilium-version ${{ matrix.cilium }} \
