@@ -3,17 +3,36 @@ SHELL := /bin/bash
 .PHONY: apply
 .DEFAULT_GOAL := help
 
+VPC_ID := $(shell terraform output --raw vpc_id)
+
 apply: AUTO_APPROVE ?= true
 apply: init 
 apply:
 	terraform apply --auto-approve=$(AUTO_APPROVE) --var-file=common.tfvars --var-file=env.tfvars -input=false
 	@chmod 600 $$(terraform output --raw path_to_kubeconfig_file)
 
+define destroy_talos
+	@terraform destroy -target module.talos \
+		--auto-approve=$(AUTO_APPROVE) \
+		--var-file=common.tfvars \
+		--var-file=env.tfvars || true
+endef
+
 ## Destroys all infra originally created by the Terraform code
 destroy: AUTO_APPROVE ?= true
 destroy:
-	terraform destroy --auto-approve=$(AUTO_APPROVE) --var-file=common.tfvars --var-file=env.tfvars
-	@rm -f .timestamp
+	# Attempt to destroy talos module created infra first, following this wait 10 minutes for all load balancers
+	# to disappear before doing a final complete destroy.
+	# This is to prevent issues where the ELB is still around when VPC delete happens (outside of talos root module
+	# preventing destroy due to attach ELB instance network interfaces).
+	$(call destroy_talos)
+	./wait-for-eni.sh $(VPC_ID)
+	$(call destroy_talos)
+	echo "Doing final destroy..."
+	terraform destroy \
+		--auto-approve=$(AUTO_APPROVE) \
+		--var-file=common.tfvars \
+		--var-file=env.tfvars
 
 ## Initialize Terraform (installs modules, plugins, etc.)
 init:
