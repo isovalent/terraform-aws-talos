@@ -1,4 +1,8 @@
-# terraform-aws-talos
+# Terraform Setup to Test Cilium on Talos
+
+![Talos Conformance](https://github.com/isovalent/terraform-aws-talos/actions/workflows/conformance.yml/badge.svg)
+![Talos Conformance (v1.13)](https://github.com/isovalent/terraform-aws-talos/actions/workflows/conformance-13.yml/badge.svg)
+![Terraform docs and formatting](https://github.com/isovalent/terraform-aws-talos/actions/workflows/terraform.yml/badge.svg)
 
 A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is uses the official [Talos Terraform provider](https://github.com/siderolabs/terraform-provider-talos) in the background. We mainly followed the provided [siderolabs/contrib](https://github.com/siderolabs/contrib/tree/main/examples/terraform/aws) example.
 
