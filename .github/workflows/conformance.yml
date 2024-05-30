@@ -126,7 +126,7 @@ jobs:
             --owner "isovalent/terraform-aws-talos"
           make apply
       - name: Install Cilium CLI
-        uses: cilium/cilium-cli@13cf0683b2662c27c691f4330c2ac0f48b429ce5 # v0.16.7
+        uses: cilium/cilium-cli@3d71144d223f1062c7226211418ddebe524cc53d # v0.16.8
         with:
           repository: cilium/cilium-cli
           release-version: v0.15.20
