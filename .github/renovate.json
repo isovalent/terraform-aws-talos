@@ -23,5 +23,13 @@
         "#\\s*renovate:\\s*(datasource=(?<datasource>.*?)\\s*)?depName=(?<depName>.*?)\\s*?[\\r\\n]+\\s*-\\s*['|\"]?(?<currentValue>v?\\d+\\.\\d+\\.\\d+)['|\"]?\\s*$"
       ]
     }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchManagers": ["github-actions"],
+      "automerge": true,
+      "automergeType": "pr"
+    }
   ]
 }
