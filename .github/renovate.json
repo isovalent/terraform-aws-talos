@@ -37,8 +37,8 @@
     },
     {
       "matchDepNames": ["siderolabs/talos"],
-      "matchUpdateTypes": ["patch"],
-      "groupName": "Talos"
+      "groupName": "Talos",
+      "matchUpdateTypes": ["patch"]
     },
     {
       "description": "Do not allow any updates for major.minor, they will be done by maintainers",
@@ -47,6 +47,13 @@
       ],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
+    },
+    {
+      "description": "Automerge github-actions updates.",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchManagers": ["github-actions"],
+      "automerge": true,
+      "automergeType": "pr"
     }
   ],
   "customManagers": [
@@ -60,14 +67,6 @@
       "matchStrings": [
         "#\\s*renovate:\\s*(datasource=(?<datasource>.*?))?\\s*depName=(?<depName>.*?)\\s+.+-\\s*['|\"]?(?<currentValue>v?\\d+\\.\\d+\\.\\d+)['|\"]?"
       ]
-    }
-  ],
-  "packageRules": [
-    {
-      "matchUpdateTypes": ["minor", "patch", "digest"],
-      "matchManagers": ["github-actions"],
-      "automerge": true,
-      "automergeType": "pr"
     }
   ]
 }
