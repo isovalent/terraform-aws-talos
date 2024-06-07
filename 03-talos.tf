@@ -126,8 +126,11 @@ data "talos_cluster_kubeconfig" "this" {
 }
 
 resource "local_file" "kubeconfig" {
-  content  = nonsensitive(data.talos_cluster_kubeconfig.this.kubeconfig_raw)
+  content  = data.talos_cluster_kubeconfig.this.kubeconfig_raw
   filename = local.path_to_kubeconfig_file
+  lifecycle {
+    ignore_changes = [content]
+}
 }
 
 # Does currently not work because of the nodes reachability from the internet.
