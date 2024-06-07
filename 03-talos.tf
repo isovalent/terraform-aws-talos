@@ -130,7 +130,7 @@ resource "local_file" "kubeconfig" {
   filename = local.path_to_kubeconfig_file
   lifecycle {
     ignore_changes = [content]
-}
+  }
 }
 
 # Does currently not work because of the nodes reachability from the internet.

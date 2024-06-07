@@ -122,6 +122,7 @@ module "talos" {
 |------|-------------|
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | Name of cluster |
 | <a name="output_elb_dns_name"></a> [elb\_dns\_name](#output\_elb\_dns\_name) | Public ELB DNS name. |
+| <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | Kubeconfig content |
 | <a name="output_path_to_kubeconfig_file"></a> [path\_to\_kubeconfig\_file](#output\_path\_to\_kubeconfig\_file) | The generated kubeconfig. |
 | <a name="output_path_to_talosconfig_file"></a> [path\_to\_talosconfig\_file](#output\_path\_to\_talosconfig\_file) | The generated talosconfig. |
 <!-- END_TF_DOCS -->
