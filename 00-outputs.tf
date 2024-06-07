@@ -17,3 +17,8 @@ output "cluster_name" {
   description = "Name of cluster"
   value       = var.cluster_name
 }
+
+output "kubeconfig" {
+  description = "Kubeconfig content"
+  value       = data.talos_cluster_kubeconfig.this.kubeconfig_raw
+}
