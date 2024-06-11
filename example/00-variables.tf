@@ -134,3 +134,40 @@ variable "pre_cilium_install_script" {
   description = "A script to be run before installing Cilium."
   type        = string
 }
+
+# Tetragon
+variable "tetragon_namespace" {
+  default     = "kube-system"
+  description = "The namespace in which to install Tetragon."
+  type        = string
+}
+
+variable "tetragon_helm_chart" {
+  default     = "cilium/tetragon"
+  description = "The name of the Helm chart to use to install Tetragon. It is assumed that the Helm repository containing this chart has been added beforehand (e.g. using 'helm repo add')."
+  type        = string
+}
+
+variable "tetragon_helm_values_file_path" {
+  description = "The path to the file containing the values to use when installing Tetragon."
+  default     = "04-tetragon-values.yaml"
+  type        = string
+}
+
+variable "tetragon_helm_values_override_file_path" {
+  default     = ""
+  description = "The path to the file containing the values to use when installing Tetragon. These values will override the ones in 'tetragon_helm_values_file_path'."
+  type        = string
+}
+
+variable "tetragon_tracingpolicy_directory" {
+  description = "Path to the directory where TracingPolicy files are stored which should automatically be applied. The directory can contain one or multiple valid TracingPoliciy YAML files."
+  default     = ""
+  type        = string
+}
+
+variable "tetragon_helm_version" {
+  description = "The version of the Tetragon Helm chart to install."
+  default     = "1.1.0"
+  type        = string
+}
