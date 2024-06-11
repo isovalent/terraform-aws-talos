@@ -110,6 +110,7 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 |------|--------|---------|
 | <a name="module_cilium"></a> [cilium](#module\_cilium) | git::https://github.com/isovalent/terraform-k8s-cilium.git | v1.6.3 |
 | <a name="module_talos"></a> [talos](#module\_talos) | ../ | n/a |
+| <a name="module_tetragon"></a> [tetragon](#module\_tetragon) | git::https://github.com/isovalent/terraform-k8s-tetragon.git | v0.4 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | git::https://github.com/isovalent/terraform-aws-vpc.git | v1.8 |
 
 ### Resources
@@ -140,6 +141,12 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for K8s Services | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the created resources. These will be merged with the default tags defined via local.tags in 00-locals.tf. | `map(string)` | <pre>{<br>  "platform": "talos",<br>  "usage": "cute"<br>}</pre> | no |
 | <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.7.1"` | no |
+| <a name="input_tetragon_helm_chart"></a> [tetragon\_helm\_chart](#input\_tetragon\_helm\_chart) | The name of the Helm chart to use to install Tetragon. It is assumed that the Helm repository containing this chart has been added beforehand (e.g. using 'helm repo add'). | `string` | `"cilium/tetragon"` | no |
+| <a name="input_tetragon_helm_values_file_path"></a> [tetragon\_helm\_values\_file\_path](#input\_tetragon\_helm\_values\_file\_path) | The path to the file containing the values to use when installing Tetragon. | `string` | `"04-tetragon-values.yaml"` | no |
+| <a name="input_tetragon_helm_values_override_file_path"></a> [tetragon\_helm\_values\_override\_file\_path](#input\_tetragon\_helm\_values\_override\_file\_path) | The path to the file containing the values to use when installing Tetragon. These values will override the ones in 'tetragon\_helm\_values\_file\_path'. | `string` | `""` | no |
+| <a name="input_tetragon_helm_version"></a> [tetragon\_helm\_version](#input\_tetragon\_helm\_version) | The version of the Tetragon Helm chart to install. | `string` | `"1.1.0"` | no |
+| <a name="input_tetragon_namespace"></a> [tetragon\_namespace](#input\_tetragon\_namespace) | The namespace in which to install Tetragon. | `string` | `"kube-system"` | no |
+| <a name="input_tetragon_tracingpolicy_directory"></a> [tetragon\_tracingpolicy\_directory](#input\_tetragon\_tracingpolicy\_directory) | Path to the directory where TracingPolicy files are stored which should automatically be applied. The directory can contain one or multiple valid TracingPoliciy YAML files. | `string` | `""` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The CIDR to use for the VPC. Currently it must be a /16 or /24. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br>    name               = string<br>    instance_type      = optional(string, "m5.large")<br>    config_patch_files = optional(list(string), [])<br>    tags               = optional(map(string), {})<br>  }))</pre> | <pre>[<br>  {<br>    "name": "default"<br>  }<br>]</pre> | no |
 
