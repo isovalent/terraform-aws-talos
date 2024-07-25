@@ -24,7 +24,7 @@ jobs:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.7.5'
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.6.7'
+          - 'v1.6.8'
         config:
           - name: 'Vanilla'
             kube-proxy: false
