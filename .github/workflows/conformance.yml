@@ -20,7 +20,7 @@ jobs:
           - '1.14.13'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.7.5'
+          - 'v1.7.6'
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.6.8'
         config:
