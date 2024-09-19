@@ -29,7 +29,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Render terraform docs inside the README.md and push changes back to PR branch
-        uses: terraform-docs/gh-actions@ceebb781ca443aeeccbbb15b3f359a78ad2ef4ce
+        uses: terraform-docs/gh-actions@6c989007421c87790b129e96e425ee5fabd61e0b
         with:
           working-dir: .
           output-file: README.md
@@ -38,7 +38,7 @@ jobs:
           indention: 3
           git-push: "true"
       - name: Render terraform docs inside the README.md and push changes back to PR branch
-        uses: terraform-docs/gh-actions@ceebb781ca443aeeccbbb15b3f359a78ad2ef4ce
+        uses: terraform-docs/gh-actions@6c989007421c87790b129e96e425ee5fabd61e0b
         with:
           working-dir: example/
           output-file: README.md
