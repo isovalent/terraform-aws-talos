@@ -128,13 +128,3 @@ resource "local_file" "kubeconfig" {
     ignore_changes = [content]
   }
 }
-
-# Does currently not work because of the nodes reachability from the internet.
-# data "talos_cluster_health" "this" {
-#   depends_on = [talos_cluster_kubeconfig.this]
-
-#   client_configuration = talos_machine_secrets.this.client_configuration
-#   endpoints            = module.talos_control_plane_nodes.*.public_ip
-#   control_plane_nodes  = module.talos_control_plane_nodes.*.private_ip
-#   worker_nodes         = [for node in module.talos_worker_group : node.private_ip]
-# }
