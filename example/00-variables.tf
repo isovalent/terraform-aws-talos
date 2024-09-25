@@ -12,23 +12,25 @@ variable "cluster_id" {
 }
 
 variable "cluster_architecture" {
+  default     = "amd64"
   description = "Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control_plane.instance_type and worker_groups.instance_type with an ARM64-based instance type like 'm7g.large'."
   type        = string
-  default     = "amd64"
 }
 
 variable "control_plane" {
+  default = {}
   description = "Info for control plane that will be created"
   type = object({
     instance_type      = optional(string, "m5.large")
     config_patch_files = optional(list(string), [])
     tags               = optional(map(string), {})
   })
-
-  default = {}
 }
 
 variable "worker_groups" {
+  default = [{
+    name = "default"
+  }]
   description = "List of node worker node groups to create"
   type = list(object({
     name               = string
@@ -36,10 +38,6 @@ variable "worker_groups" {
     config_patch_files = optional(list(string), [])
     tags               = optional(map(string), {})
   }))
-
-  default = [{
-    name = "default"
-  }]
 }
 
 variable "region" {
@@ -69,15 +67,15 @@ variable "tags" {
 
 # talos module
 variable "talos_version" {
-  default     = "v1.7.1"
-  type        = string
+  default     = "v1.8.0"
   description = "Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
+  type        = string
 }
 
 variable "kubernetes_version" {
-  default     = "1.29.3"
-  type        = string
+  default     = "1.31.1"
   description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/."
+  type        = string
 }
 
 variable "service_cidr" {
@@ -87,9 +85,9 @@ variable "service_cidr" {
 }
 
 variable "allocate_node_cidrs" {
+  default     = false
   description = "Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode."
   type        = bool
-  default     = false
 }
 
 variable "pod_cidr" {
@@ -107,14 +105,14 @@ variable "cilium_namespace" {
 
 variable "cilium_helm_chart" {
   default     = "cilium/cilium"
-  type        = string
   description = "The name of the Helm chart to be used. The naming depends on the Helm repo naming on the local machine."
+  type        = string
 }
 
 variable "cilium_helm_version" {
-  default     = "1.15.4"
-  type        = string
+  default     = "1.16.1"
   description = "The version of the used Helm chart. Check https://github.com/cilium/cilium/releases to see available versions."
+  type        = string
 }
 
 variable "cilium_helm_values_file_path" {
@@ -149,8 +147,8 @@ variable "tetragon_helm_chart" {
 }
 
 variable "tetragon_helm_values_file_path" {
-  description = "The path to the file containing the values to use when installing Tetragon."
   default     = "04-tetragon-values.yaml"
+  description = "The path to the file containing the values to use when installing Tetragon."
   type        = string
 }
 
@@ -161,13 +159,13 @@ variable "tetragon_helm_values_override_file_path" {
 }
 
 variable "tetragon_tracingpolicy_directory" {
-  description = "Path to the directory where TracingPolicy files are stored which should automatically be applied. The directory can contain one or multiple valid TracingPoliciy YAML files."
   default     = ""
+  description = "Path to the directory where TracingPolicy files are stored which should automatically be applied. The directory can contain one or multiple valid TracingPoliciy YAML files."
   type        = string
 }
 
 variable "tetragon_helm_version" {
+  default     = "1.2.0"
   description = "The version of the Tetragon Helm chart to install."
-  default     = "1.1.0"
   type        = string
 }
