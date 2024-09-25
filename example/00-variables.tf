@@ -18,7 +18,7 @@ variable "cluster_architecture" {
 }
 
 variable "control_plane" {
-  default = {}
+  default     = {}
   description = "Info for control plane that will be created"
   type = object({
     instance_type      = optional(string, "m5.large")

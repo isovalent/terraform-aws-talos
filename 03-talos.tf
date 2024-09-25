@@ -51,8 +51,6 @@ data "talos_machine_configuration" "controlplane" {
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.kubernetes_version
   talos_version      = var.talos_version
-  docs               = false
-  examples           = false
   config_patches = concat(
     local.config_patches_common,
     [yamlencode(local.common_config_patch)],
@@ -70,8 +68,6 @@ data "talos_machine_configuration" "worker_group" {
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.kubernetes_version
   talos_version      = var.talos_version
-  docs               = false
-  examples           = false
   config_patches = concat(
     local.config_patches_common,
     [yamlencode(local.common_config_patch)],
@@ -117,7 +113,7 @@ resource "local_file" "talosconfig" {
   filename = local.path_to_talosconfig_file
 }
 
-data "talos_cluster_kubeconfig" "this" {
+resource "talos_cluster_kubeconfig" "this" {
   depends_on = [talos_machine_bootstrap.this]
 
   client_configuration = talos_machine_secrets.this.client_configuration
@@ -126,7 +122,7 @@ data "talos_cluster_kubeconfig" "this" {
 }
 
 resource "local_file" "kubeconfig" {
-  content  = data.talos_cluster_kubeconfig.this.kubeconfig_raw
+  content  = talos_cluster_kubeconfig.this.kubeconfig_raw
   filename = local.path_to_kubeconfig_file
   lifecycle {
     ignore_changes = [content]
@@ -135,7 +131,7 @@ resource "local_file" "kubeconfig" {
 
 # Does currently not work because of the nodes reachability from the internet.
 # data "talos_cluster_health" "this" {
-#   depends_on = [data.talos_cluster_kubeconfig.this]
+#   depends_on = [talos_cluster_kubeconfig.this]
 
 #   client_configuration = talos_machine_secrets.this.client_configuration
 #   endpoints            = module.talos_control_plane_nodes.*.public_ip
