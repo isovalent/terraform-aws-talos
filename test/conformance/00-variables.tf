@@ -38,14 +38,14 @@ variable "tags" {
 
 # talos module
 variable "talos_version" {
-  type        = string
   description = "Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
+  type        = string
 }
 
 variable "kubernetes_version" {
   default     = "1.29.3"
-  type        = string
   description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/."
+  type        = string
 }
 
 variable "service_cidr" {
@@ -55,9 +55,9 @@ variable "service_cidr" {
 }
 
 variable "allocate_node_cidrs" {
+  default     = false
   description = "Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode."
   type        = bool
-  default     = false
 }
 
 variable "pod_cidr" {
