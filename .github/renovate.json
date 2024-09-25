@@ -18,7 +18,7 @@
   "osvVulnerabilityAlerts": true,
   "separateMinorPatch": true,
   "schedule": [
-    "after 2am and before 5am every weekday"
+    "before 7am on Monday"
   ],
   "packageRules": [
     {
