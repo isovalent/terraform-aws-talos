@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@6d193bf28034eafb982f37bd894289fe649468fc
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Configure AWS credentials from shared services account
