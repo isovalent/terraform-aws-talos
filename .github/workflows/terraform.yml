@@ -6,7 +6,7 @@ on:
       - main
 jobs:
   formatting:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@6d193bf28034eafb982f37bd894289fe649468fc
@@ -22,7 +22,7 @@ jobs:
           path: example
   docs:
     needs: formatting
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@6d193bf28034eafb982f37bd894289fe649468fc
