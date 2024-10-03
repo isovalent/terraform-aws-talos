@@ -27,15 +27,6 @@
       "matchUpdateTypes": ["patch"]
     },
     {
-      "description": "Let's do our Cilium 1.13 testing with the latest patch release. Don't update major or minor.",
-      "matchDepNames": ["cilium/cilium"],
-      "matchFileNames": [
-        ".github/workflows/conformance-13*"
-      ],
-      "groupName": "Cilium 13",
-      "allowedVersions": "/^v1\\.13\\.[0-9]+$/"
-    },
-    {
       "matchDepNames": ["siderolabs/talos"],
       "groupName": "Talos",
       "matchUpdateTypes": ["patch"]
