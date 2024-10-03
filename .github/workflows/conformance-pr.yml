@@ -20,9 +20,9 @@ jobs:
           - '1.14.15'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.7.7'
+          - 'v1.8.0'
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.6.8'
+          - 'v1.7.7'
         config:
           # --- Cilium v1.15 ---
           - name: 'Vanilla'
