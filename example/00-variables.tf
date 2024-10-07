@@ -96,6 +96,12 @@ variable "pod_cidr" {
   type        = string
 }
 
+variable "disable_kube_proxy" {
+  default     = true
+  description = "Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed."
+  type        = bool
+}
+
 # Cilium module
 variable "cilium_namespace" {
   default     = "kube-system"
