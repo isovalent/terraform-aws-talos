@@ -6,7 +6,7 @@ image:
 
 k8s:
   requireIPv4PodCIDR: true
-  requireIPv6PodCIDR: false 
+  requireIPv6PodCIDR: false
 
 
 devices:
@@ -17,13 +17,13 @@ enableIPv6Masquerade: true
 
 debug:
   enabled: true
- 
+
 # Configure unique cluster name & ID (used for ClusterMesh in the future)
 cluster:
   id: 1
 
 k8sServiceHost: "localhost"
-k8sServicePort: "7445" 
+k8sServicePort: "7445"
 
 # -- Monitoring and Flow Visibility
 

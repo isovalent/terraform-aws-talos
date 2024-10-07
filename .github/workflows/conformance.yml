@@ -3,6 +3,9 @@ on:
   schedule:
     # Run weekly.
     - cron: '0 9 * * 1'
+  pull_request:
+    paths:
+    - '.github/workflows/conformance.yml'
 jobs:
   setup-and-test:
     runs-on: ubuntu-22.04
@@ -29,7 +32,7 @@ jobs:
           - name: 'Vanilla'
             kube-proxy: false
             kube-proxy-replacement: "true"
-            socketlb: false 
+            socketlb: false
             bpf-masquerade: true
             ipam-mode: 'kubernetes'
             ipv4: true
@@ -38,22 +41,24 @@ jobs:
             encryption-type: ipsec
             tunnel-mode: vxlan
             nodeport: true
+            ingress-controller: true
 
           - name: 'Wireguard'
-            kube-proxy: true 
+            kube-proxy: true
             kube-proxy-replacement: "true"
-            socketlb: false 
-            bpf-masquerade: true 
+            socketlb: false
+            bpf-masquerade: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
             encryption-enabled: true
             encryption-type: wireguard
             tunnel-mode: vxlan
-            nodeport: true 
+            nodeport: true
+            ingress-controller: true
 
           - name: 'IPSEC'
-            kube-proxy: true 
+            kube-proxy: true
             kube-proxy-replacement: "false"
             socketlb: true
             bpf-masquerade: false
@@ -61,9 +66,10 @@ jobs:
             ipv4: true
             ipv6: false
             encryption-enabled: true
-            encryption-type: ipsec 
+            encryption-type: ipsec
             tunnel-mode: vxlan
             nodeport: false
+            ingress-controller: false
 
           - name: 'No KPR and w/ BPF Masq'
             kube-proxy: true
@@ -75,12 +81,13 @@ jobs:
             ipv6: false
             encryption-enabled: false
             tunnel-mode: vxlan
-            nodeport: true 
+            nodeport: true
+            ingress-controller: true
 
           - name: 'Clusterpool IPAM Mode'
             kube-proxy: false
             kube-proxy-replacement: "true"
-            socketlb: false 
+            socketlb: false
             bpf-masquerade: true
             ipam-mode: 'cluster-pool'
             ipv4: true
@@ -89,19 +96,21 @@ jobs:
             encryption-type: ipsec
             tunnel-mode: vxlan
             nodeport: true
+            ingress-controller: true
 
           - name: 'With Geneve Tunnel'
             kube-proxy: false
             kube-proxy-replacement: "true"
-            socketlb: false 
+            socketlb: false
             bpf-masquerade: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
             encryption-enabled: false
             encryption-type: ipsec
-            tunnel-mode: geneve 
+            tunnel-mode: geneve
             nodeport: true
+            ingress-controller: true
 
     steps:
       - name: Checkout
@@ -114,7 +123,7 @@ jobs:
           role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
           aws-region: us-east-2
       - uses: hashicorp/setup-terraform@v3
-      - name: Create Talos Cluster 
+      - name: Create Talos Cluster
         run: |
           cd test/conformance
           ./create-ci-env.sh \
@@ -156,19 +165,19 @@ jobs:
             --set kubeProxyReplacement=${{ matrix.config.kube-proxy-replacement }} \
             --set socketLB.enabled=${{ matrix.config.socketlb }} \
             --set ipam.mode=${{ matrix.config.ipam-mode }} \
-            --set ingressController.enabled=true \
+            --set ingressController.enabled=${{ matrix.config.ingress-controller }} \
             --set encryption.enabled=${{ matrix.config.encryption-enabled }} \
             --set encryption.type=${{ matrix.config.encryption-type }} \
             --set tunnelProtocol=${{ matrix.config.tunnel-mode }} \
             --set nodePort.enabled=${{ matrix.config.nodeport }}
           cilium-cli status --wait
 
-      - name: Run E2E Connectivity Tests 
+      - name: Run E2E Connectivity Tests
         run: |
           cd test/conformance
           export $(make print-kubeconfig)
           ./wait
-          kubectl create ns cilium-test 
+          kubectl create ns cilium-test
           kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
           kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
           cilium-cli connectivity test --collect-sysdump-on-failure
@@ -196,7 +205,7 @@ jobs:
         if: always()
         run: |
           cd test/conformance
-          make destroy 
+          make destroy
 
   finalize:
     runs-on: ubuntu-22.04
