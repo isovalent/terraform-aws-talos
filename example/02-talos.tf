@@ -12,6 +12,8 @@ module "talos" {
   worker_groups        = var.worker_groups
   region               = var.region
   tags                 = local.tags
+  allocate_node_cidrs  = var.allocate_node_cidrs
+  disable_kube_proxy   = var.disable_kube_proxy
   # For single-node cluster support:
   #allow_workload_on_cp_nodes = true
   #controlplane_count         = 1
