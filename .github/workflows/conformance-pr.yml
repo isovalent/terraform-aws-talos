@@ -24,11 +24,10 @@ jobs:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.7.7'
         config:
-          # --- Cilium v1.15 ---
           - name: 'Vanilla'
             kube-proxy: false
             kube-proxy-replacement: "true"
-            socketlb: false 
+            socketlb: false
             bpf-masquerade: true
             ipam-mode: 'kubernetes'
             ipv4: true
@@ -37,6 +36,7 @@ jobs:
             encryption-type: ipsec
             tunnel-mode: vxlan
             nodeport: true
+            ingress-controller: false
     steps:
       - name: Checkout
         uses: actions/checkout@6b42224f41ee5dfe5395e27c8b2746f1f9955030
@@ -48,7 +48,7 @@ jobs:
           role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
           aws-region: us-east-2
       - uses: hashicorp/setup-terraform@v3
-      - name: Create Talos Cluster 
+      - name: Create Talos Cluster
         run: |
           cd test/conformance
           ./create-ci-env.sh \
@@ -91,19 +91,19 @@ jobs:
             --set kubeProxyReplacement=${{ matrix.config.kube-proxy-replacement }} \
             --set socketLB.enabled=${{ matrix.config.socketlb }} \
             --set ipam.mode=${{ matrix.config.ipam-mode }} \
-            --set ingressController.enabled=true \
+            --set ingressController.enabled=${{ matrix.config.ingress-controller }} \
             --set encryption.enabled=${{ matrix.config.encryption-enabled }} \
             --set encryption.type=${{ matrix.config.encryption-type }} \
             --set tunnelProtocol=${{ matrix.config.tunnel-mode }} \
             --set nodePort.enabled=${{ matrix.config.nodeport }}
           cilium-cli status --wait
 
-      - name: Run E2E Connectivity Tests 
+      - name: Run E2E Connectivity Tests
         run: |
           cd test/conformance
           export $(make print-kubeconfig)
           ./wait
-          kubectl create ns cilium-test 
+          kubectl create ns cilium-test
           kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
           kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
           cilium-cli connectivity test --collect-sysdump-on-failure
@@ -131,5 +131,5 @@ jobs:
         if: always()
         run: |
           cd test/conformance
-          make destroy 
+          make destroy
 
