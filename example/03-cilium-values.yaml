@@ -25,10 +25,20 @@ cluster:
 tunnelProtocol: vxlan
 routingMode: tunnel
 
+encryption:
+  enabled: true
+  type: ipsec
+
+ingressController:
+  enabled: true
+
+nodePort:
+  enabled: true
+
 # KubeProxyReplacement
-kubeProxyReplacement: "true"
-k8sServiceHost: ${KUBE_APISERVER_HOST}
-k8sServicePort: ${KUBE_APISERVER_PORT}
+#kubeProxyReplacement: "true"
+#k8sServiceHost: ${KUBE_APISERVER_HOST}
+#k8sServicePort: ${KUBE_APISERVER_PORT}
 
 # -- Monitoring and Flow Visibility
 
