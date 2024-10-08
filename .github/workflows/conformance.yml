@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
     - '.github/workflows/conformance.yml'
+  workflow_dispatch:
 jobs:
   setup-and-test:
     runs-on: ubuntu-22.04
