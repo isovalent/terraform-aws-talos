@@ -19,11 +19,11 @@ jobs:
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.16.2'
+          - '1.16.3'
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.15.9'
+          - '1.15.10'
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.14.15'
+          - '1.14.16'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.8.1'
