@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@3b9b8c884f6b4bb4d5be2779c26374abadae0871
+        uses: actions/checkout@cbb722410c2e876e24abbe8de2cc27693e501dcb
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: terraform fmt
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@3b9b8c884f6b4bb4d5be2779c26374abadae0871
+        uses: actions/checkout@cbb722410c2e876e24abbe8de2cc27693e501dcb
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Render terraform docs inside the README.md and push changes back to PR branch
