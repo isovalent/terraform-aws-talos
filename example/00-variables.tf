@@ -102,6 +102,28 @@ variable "disable_kube_proxy" {
   type        = bool
 }
 
+variable "enable_external_cloud_provider" {
+  default     = false
+  description = "Whether to enable or disable externalCloudProvider support. See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/."
+  type        = bool
+}
+
+variable "deploy_external_cloud_provider_iam_policies" {
+  default     = false
+  description = "Whether to auto-deploy the externalCloudProvider-required IAM policies. See https://cloud-provider-aws.sigs.k8s.io/prerequisites/."
+  type        = bool
+  validation {
+    condition     = (var.deploy_external_cloud_provider_iam_policies && var.enable_external_cloud_provider) || (!var.deploy_external_cloud_provider_iam_policies)
+    error_message = "externalCloudProvider support needs to be enabled when trying to deploy the externalCloudProvider-required IAM policies."
+  }
+}
+
+variable "external_cloud_provider_manifest" {
+  default     = "https://raw.githubusercontent.com/isovalent/terraform-aws-talos/main/aws-cloud-controller.yaml"
+  description = "externalCloudProvider manifest to be applied if var.enable_external_cloud_provider is enabled. If you want to deploy it manually (e.g., via Helm chart), enable var.enable_external_cloud_provider but set this value to an empty string (\"\"). See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/."
+  type        = string
+}
+
 # Cilium module
 variable "cilium_namespace" {
   default     = "kube-system"

@@ -14,6 +14,7 @@ A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is
   - [Talos' KubePrism](https://www.talos.dev/v1.5/kubernetes-guides/configuration/kubeprism/) to get an internal endpoint for the KAPI (used for [Cilium Kube-Proxy replacement](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/))
   - [kubernetes-sigs/metrics-server](https://github.com/kubernetes-sigs/metrics-server/)
   - [alex1989hu/kubelet-serving-cert-approver](https://github.com/alex1989hu/kubelet-serving-cert-approver) inspired by [Talos' Deploying Metrics Server](https://www.talos.dev/v1.5/kubernetes-guides/configuration/deploy-metrics-server/) guide.
+  - [AWS Cloud Provider](https://github.com/kubernetes/cloud-provider-aws/tree/master)
 - Cilium features:
   - [Kube-Proxy replacement](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/)
   - [IPAM modes](https://docs.cilium.io/en/stable/network/concepts/ipam/): `kubernetes`, `cluster-pool`
@@ -72,6 +73,8 @@ module "talos" {
 
 | Name | Type |
 |------|------|
+| [aws_iam_policy.control_plane_ccm_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.worker_ccm_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [local_file.kubeconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [local_file.talosconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [null_resource.wait_for_public_subnets](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -93,17 +96,24 @@ module "talos" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_admission_plugins"></a> [admission\_plugins](#input\_admission\_plugins) | List of admission plugins to enable | `string` | `"MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ServiceAccount"` | no |
 | <a name="input_allocate_node_cidrs"></a> [allocate\_node\_cidrs](#input\_allocate\_node\_cidrs) | Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode. | `bool` | `true` | no |
-| <a name="input_allow_workload_on_cp_nodes"></a> [allow\_workload\_on\_cp\_nodes](#input\_allow\_workload\_on\_cp\_nodes) | Allow workloads on CP nodes or not. Allowing it means Talos Linux default taints are removed from CP nodes. More details here: https://www.talos.dev/v1.5/talos-guides/howto/workers-on-controlplane/ | `bool` | `false` | no |
+| <a name="input_allow_workload_on_cp_nodes"></a> [allow\_workload\_on\_cp\_nodes](#input\_allow\_workload\_on\_cp\_nodes) | Allow workloads on CP nodes or not. Allowing it means Talos Linux default taints are removed from CP nodes which is typically required for single-node clusters. More details here: https://www.talos.dev/v1.5/talos-guides/howto/workers-on-controlplane/ | `bool` | `false` | no |
 | <a name="input_cluster_architecture"></a> [cluster\_architecture](#input\_cluster\_architecture) | Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control\_plane.instance\_type and worker\_groups.instance\_type with an ARM64-based instance type like 'm7g.large'. | `string` | `"amd64"` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | The ID of the cluster. | `number` | `"1"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of cluster | `string` | n/a | yes |
 | <a name="input_config_patch_files"></a> [config\_patch\_files](#input\_config\_patch\_files) | Path to talos config path files that applies to all nodes | `list(string)` | `[]` | no |
 | <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Info for control plane that will be created | <pre>object({<br/>    instance_type      = optional(string, "m5.large")<br/>    config_patch_files = optional(list(string), [])<br/>    tags               = optional(map(string), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_controlplane_count"></a> [controlplane\_count](#input\_controlplane\_count) | Defines how many controlplane nodes are deployed in the cluster. | `number` | `3` | no |
+| <a name="input_deploy_external_cloud_provider_iam_policies"></a> [deploy\_external\_cloud\_provider\_iam\_policies](#input\_deploy\_external\_cloud\_provider\_iam\_policies) | Whether to auto-deploy the externalCloudProvider-required IAM policies. See https://cloud-provider-aws.sigs.k8s.io/prerequisites/. | `bool` | `false` | no |
 | <a name="input_disable_kube_proxy"></a> [disable\_kube\_proxy](#input\_disable\_kube\_proxy) | Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed. | `bool` | `true` | no |
+| <a name="input_enable_external_cloud_provider"></a> [enable\_external\_cloud\_provider](#input\_enable\_external\_cloud\_provider) | Whether to enable or disable externalCloudProvider support. See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/. | `bool` | `false` | no |
+| <a name="input_external_cloud_provider_manifest"></a> [external\_cloud\_provider\_manifest](#input\_external\_cloud\_provider\_manifest) | externalCloudProvider manifest to be applied if var.enable\_external\_cloud\_provider is enabled. If you want to deploy it manually (e.g., via Helm chart), enable var.enable\_external\_cloud\_provider but set this value to an empty string (""). See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/. | `string` | `"https://raw.githubusercontent.com/isovalent/terraform-aws-talos/main/aws-cloud-controller.yaml"` | no |
+| <a name="input_iam_instance_profile_control_plane"></a> [iam\_instance\_profile\_control\_plane](#input\_iam\_instance\_profile\_control\_plane) | IAM instance profile to attach to the control plane instances to give AWS CCM the sufficient rights to execute. | `string` | `null` | no |
+| <a name="input_iam_instance_profile_worker"></a> [iam\_instance\_profile\_worker](#input\_iam\_instance\_profile\_worker) | IAM instance profile to attach to the worker instances to give AWS CCM the sufficient rights to execute. | `string` | `null` | no |
 | <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/. For example '1.29.3'. | `string` | `""` | no |
+| <a name="input_metadata_options"></a> [metadata\_options](#input\_metadata\_options) | Metadata to attach to the instances. | `map(string)` | <pre>{<br/>  "http_endpoint": "enabled",<br/>  "http_put_response_hop_limit": 1,<br/>  "http_tokens": "optional"<br/>}</pre> | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for Pods. Only required in case allocate\_node\_cidrs is set to 'true'. Otherwise, simply configure it inside Cilium's Helm values. | `string` | `"100.64.0.0/14"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the Talos Linux cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
