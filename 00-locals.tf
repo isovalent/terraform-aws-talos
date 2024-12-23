@@ -25,16 +25,21 @@ locals {
 
   common_config_patch = {
     cluster = {
+
       id          = var.cluster_id,
       clusterName = var.cluster_name,
       apiServer = {
         certSANs = [
-          module.elb_k8s_elb.elb_dns_name
-        ]
+          module.elb_k8s_elb.elb_dns_name,
+        ],
+        extraArgs = {
+          enable-admission-plugins = var.admission_plugins
+        }
       },
       controllerManager = {
         extraArgs = {
           allocate-node-cidrs = var.allocate_node_cidrs
+          cloud-provider      = "external"
         }
       },
       network = {
@@ -59,17 +64,18 @@ locals {
         registerWithFQDN = true
       },
       certSANs = [
-        module.elb_k8s_elb.elb_dns_name
+        module.elb_k8s_elb.elb_dns_name,
       ],
       kubelet = {
         extraArgs = {
           rotate-server-certificates = true
+          cloud-provider             = "external"
         }
       }
     }
   }
 
-  # Used to configure Cilium Kube-Proxy replacement
+  # Used to configure Cilium Kube-Proxy replacement  
   config_cilium_patch = {
     cluster = {
       proxy = {

@@ -10,6 +10,8 @@ module "talos_control_plane_nodes" {
   subnet_id                   = element(data.aws_subnets.public.ids, count.index)
   associate_public_ip_address = true
   tags                        = merge(var.tags, local.cluster_required_tags)
+  metadata_options            = var.metadata_options
+  iam_instance_profile        = var.iam_instance_profile_controller
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
@@ -32,6 +34,8 @@ module "talos_worker_group" {
   subnet_id                   = element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
   associate_public_ip_address = true
   tags                        = merge(each.value.tags, var.tags, local.cluster_required_tags)
+  metadata_options            = var.metadata_options
+  iam_instance_profile        = var.iam_instance_profile_worker
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
@@ -45,6 +49,8 @@ module "talos_worker_group" {
 resource "talos_machine_secrets" "this" {}
 
 data "talos_machine_configuration" "controlplane" {
+  for_each = { for index in range(var.controlplane_count) : index => index }
+
   cluster_name       = var.cluster_name
   cluster_endpoint   = "https://${module.elb_k8s_elb.elb_dns_name}"
   machine_type       = "controlplane"
@@ -55,6 +61,18 @@ data "talos_machine_configuration" "controlplane" {
     local.config_patches_common,
     [yamlencode(local.common_config_patch)],
     [yamlencode(local.config_cilium_patch)],
+    [yamlencode(
+      {
+        machine = {
+          kubelet = {
+            extraArgs = {
+              hostname-override = module.talos_control_plane_nodes[each.key].id
+            }
+          }
+        }
+      }
+      )
+    ],
     [for path in var.control_plane.config_patch_files : file(path)]
   )
 }
@@ -72,17 +90,28 @@ data "talos_machine_configuration" "worker_group" {
     local.config_patches_common,
     [yamlencode(local.common_config_patch)],
     [yamlencode(local.config_cilium_patch)],
+    [yamlencode(
+      {
+        machine = {
+          kubelet = {
+            extraArgs = {
+              hostname-override = module.talos_worker_group[each.key].id
+            }
+          }
+        }
+      }
+      )
+    ],
     [for path in each.value.config_patch_files : file(path)]
   )
 }
 
 resource "talos_machine_configuration_apply" "controlplane" {
-  count = var.controlplane_count
-
+  for_each                    = { for index, instance in module.talos_control_plane_nodes : index => instance }
   client_configuration        = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.controlplane.machine_configuration
-  endpoint                    = module.talos_control_plane_nodes[count.index].public_ip
-  node                        = module.talos_control_plane_nodes[count.index].private_ip
+  machine_configuration_input = data.talos_machine_configuration.controlplane[each.key].machine_configuration
+  endpoint                    = module.talos_control_plane_nodes[each.key].public_ip
+  node                        = module.talos_control_plane_nodes[each.key].private_ip
 }
 
 resource "talos_machine_configuration_apply" "worker_group" {
@@ -105,7 +134,6 @@ resource "talos_machine_bootstrap" "this" {
 data "talos_client_configuration" "this" {
   cluster_name         = var.cluster_name
   client_configuration = talos_machine_secrets.this.client_configuration
-  endpoints            = module.talos_control_plane_nodes.*.public_ip
 }
 
 resource "local_file" "talosconfig" {

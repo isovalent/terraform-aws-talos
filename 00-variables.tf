@@ -9,6 +9,29 @@ variable "cluster_id" {
   type        = number
 }
 
+variable "iam_instance_profile_controller" {
+  description = "IAM instance profile to attach to the controller instances."
+  type        = string
+  default     = null
+}
+
+variable "iam_instance_profile_worker" {
+  description = "IAM instance profile to attach to the worker instances."
+  type        = string
+  default     = null
+}
+
+variable "metadata_options" {
+  description = "Metadata to attach to the instances."
+  type        = map(string)
+  default = {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+    instance_metadata_tags      = "disabled"
+  }
+}
+
 variable "cluster_architecture" {
   default     = "amd64"
   description = "Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control_plane.instance_type and worker_groups.instance_type with an ARM64-based instance type like 'm7g.large'."
@@ -60,7 +83,7 @@ variable "allow_workload_on_cp_nodes" {
 }
 
 variable "talos_version" {
-  default     = "v1.8.0"
+  default     = "v1.9.1"
   description = "Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
   type        = string
   validation {
@@ -142,4 +165,10 @@ variable "config_patch_files" {
   default     = []
   description = "Path to talos config path files that applies to all nodes"
   type        = list(string)
+}
+
+variable "admission_plugins" {
+  description = "List of admission plugins to enable"
+  type        = string
+  default     = "MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ServiceAccount"
 }

@@ -25,8 +25,8 @@ module "talos" {
   source = "git::https://github.com/isovalent/terraform-aws-talos?ref=<RELEASE_TAG>"
 
   // Supported Talos versions (and therefore K8s versions) can be found here: https://github.com/siderolabs/talos/releases
-  talos_version      = "v1.5.3"
-  kubernetes_version = "1.27.3"
+  talos_version      = "v1.9.1"
+  kubernetes_version = "1.31.4"
   cluster_name       = "talos-cute"
   region             = "eu-west-1"
   tags               = local.tags
@@ -46,7 +46,7 @@ module "talos" {
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.4.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
-| <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.6.1 |
+| <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.7.0 |
 
 ### Providers
 
@@ -56,7 +56,7 @@ module "talos" {
 | <a name="provider_local"></a> [local](#provider\_local) | n/a |
 | <a name="provider_null"></a> [null](#provider\_null) | n/a |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
-| <a name="provider_talos"></a> [talos](#provider\_talos) | 0.6.1 |
+| <a name="provider_talos"></a> [talos](#provider\_talos) | 0.7.0 |
 
 ### Modules
 
@@ -76,23 +76,24 @@ module "talos" {
 | [local_file.talosconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [null_resource.wait_for_public_subnets](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [random_string.workspace_id](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
-| [talos_cluster_kubeconfig.this](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/resources/cluster_kubeconfig) | resource |
-| [talos_machine_bootstrap.this](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/resources/machine_bootstrap) | resource |
-| [talos_machine_configuration_apply.controlplane](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/resources/machine_configuration_apply) | resource |
-| [talos_machine_configuration_apply.worker_group](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/resources/machine_configuration_apply) | resource |
-| [talos_machine_secrets.this](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/resources/machine_secrets) | resource |
+| [talos_cluster_kubeconfig.this](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/resources/cluster_kubeconfig) | resource |
+| [talos_machine_bootstrap.this](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/resources/machine_bootstrap) | resource |
+| [talos_machine_configuration_apply.controlplane](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/resources/machine_configuration_apply) | resource |
+| [talos_machine_configuration_apply.worker_group](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/resources/machine_configuration_apply) | resource |
+| [talos_machine_secrets.this](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/resources/machine_secrets) | resource |
 | [aws_ami.talos](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnets.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
-| [talos_client_configuration.this](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/data-sources/client_configuration) | data source |
-| [talos_machine_configuration.controlplane](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/data-sources/machine_configuration) | data source |
-| [talos_machine_configuration.worker_group](https://registry.terraform.io/providers/siderolabs/talos/0.6.1/docs/data-sources/machine_configuration) | data source |
+| [talos_client_configuration.this](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/data-sources/client_configuration) | data source |
+| [talos_machine_configuration.controlplane](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/data-sources/machine_configuration) | data source |
+| [talos_machine_configuration.worker_group](https://registry.terraform.io/providers/siderolabs/talos/0.7.0/docs/data-sources/machine_configuration) | data source |
 
 ### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_admission_plugins"></a> [admission\_plugins](#input\_admission\_plugins) | List of admission plugins to enable | `string` | `"MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ServiceAccount"` | no |
 | <a name="input_allocate_node_cidrs"></a> [allocate\_node\_cidrs](#input\_allocate\_node\_cidrs) | Whether to assign PodCIDRs to Node resources or not. Only needed in case Cilium runs in 'kubernetes' IPAM mode. | `bool` | `true` | no |
 | <a name="input_allow_workload_on_cp_nodes"></a> [allow\_workload\_on\_cp\_nodes](#input\_allow\_workload\_on\_cp\_nodes) | Allow workloads on CP nodes or not. Allowing it means Talos Linux default taints are removed from CP nodes. More details here: https://www.talos.dev/v1.5/talos-guides/howto/workers-on-controlplane/ | `bool` | `false` | no |
 | <a name="input_cluster_architecture"></a> [cluster\_architecture](#input\_cluster\_architecture) | Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control\_plane.instance\_type and worker\_groups.instance\_type with an ARM64-based instance type like 'm7g.large'. | `string` | `"amd64"` | no |
@@ -102,14 +103,17 @@ module "talos" {
 | <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Info for control plane that will be created | <pre>object({<br/>    instance_type      = optional(string, "m5.large")<br/>    config_patch_files = optional(list(string), [])<br/>    tags               = optional(map(string), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_controlplane_count"></a> [controlplane\_count](#input\_controlplane\_count) | Defines how many controlplane nodes are deployed in the cluster. | `number` | `3` | no |
 | <a name="input_disable_kube_proxy"></a> [disable\_kube\_proxy](#input\_disable\_kube\_proxy) | Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed. | `bool` | `true` | no |
+| <a name="input_iam_instance_profile_controller"></a> [iam\_instance\_profile\_controller](#input\_iam\_instance\_profile\_controller) | IAM instance profile to attach to the controller instances. | `string` | `null` | no |
+| <a name="input_iam_instance_profile_worker"></a> [iam\_instance\_profile\_worker](#input\_iam\_instance\_profile\_worker) | IAM instance profile to attach to the worker instances. | `string` | `null` | no |
 | <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/. For example '1.29.3'. | `string` | `""` | no |
+| <a name="input_metadata_options"></a> [metadata\_options](#input\_metadata\_options) | Metadata to attach to the instances. | `map(string)` | <pre>{<br/>  "http_endpoint": "enabled",<br/>  "http_put_response_hop_limit": 2,<br/>  "http_tokens": "required",<br/>  "instance_metadata_tags": "disabled"<br/>}</pre> | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for Pods. Only required in case allocate\_node\_cidrs is set to 'true'. Otherwise, simply configure it inside Cilium's Helm values. | `string` | `"100.64.0.0/14"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the Talos Linux cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the cluster. | `map(string)` | n/a | yes |
 | <a name="input_talos_api_allowed_cidr"></a> [talos\_api\_allowed\_cidr](#input\_talos\_api\_allowed\_cidr) | The CIDR from which to allow to access the Talos API | `string` | `"0.0.0.0/0"` | no |
-| <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.8.0"` | no |
+| <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.9.1"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC where to place the VMs. | `string` | n/a | yes |
 | <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br/>    name               = string<br/>    instance_type      = optional(string, "m5.large")<br/>    config_patch_files = optional(list(string), [])<br/>    tags               = optional(map(string), {})<br/>  }))</pre> | <pre>[<br/>  {<br/>    "name": "default"<br/>  }<br/>]</pre> | no |
