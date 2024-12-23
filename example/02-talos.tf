@@ -19,7 +19,10 @@ module "talos" {
   #controlplane_count         = 1
   #workers_count              = 0
   // VPC needs to be created in advance via https://github.com/isovalent/terraform-aws-vpc
-  vpc_id       = module.vpc.id
-  pod_cidr     = var.pod_cidr
-  service_cidr = var.service_cidr
+  vpc_id                                      = module.vpc.id
+  pod_cidr                                    = var.pod_cidr
+  service_cidr                                = var.service_cidr
+  enable_external_cloud_provider              = var.enable_external_cloud_provider
+  deploy_external_cloud_provider_iam_policies = var.deploy_external_cloud_provider_iam_policies
+  external_cloud_provider_manifest            = var.external_cloud_provider_manifest
 }

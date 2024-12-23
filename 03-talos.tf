@@ -1,3 +1,117 @@
+# https://cloud-provider-aws.sigs.k8s.io/prerequisites/
+resource "aws_iam_policy" "control_plane_ccm_policy" {
+  count = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? 1 : 0
+
+  name        = "${var.cluster_name}-control-plane-ccm-policy"
+  path        = "/"
+  description = "IAM policy for the control plane nodes to allow CCM to manage AWS resources"
+
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Action" : [
+            "autoscaling:DescribeAutoScalingGroups",
+            "autoscaling:DescribeLaunchConfigurations",
+            "autoscaling:DescribeTags",
+            "ec2:DescribeInstances",
+            "ec2:DescribeRegions",
+            "ec2:DescribeRouteTables",
+            "ec2:DescribeSecurityGroups",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeVolumes",
+            "ec2:DescribeAvailabilityZones",
+            "ec2:CreateSecurityGroup",
+            "ec2:CreateTags",
+            "ec2:CreateVolume",
+            "ec2:ModifyInstanceAttribute",
+            "ec2:ModifyVolume",
+            "ec2:AttachVolume",
+            "ec2:AuthorizeSecurityGroupIngress",
+            "ec2:CreateRoute",
+            "ec2:DeleteRoute",
+            "ec2:DeleteSecurityGroup",
+            "ec2:DeleteVolume",
+            "ec2:DetachVolume",
+            "ec2:RevokeSecurityGroupIngress",
+            "ec2:DescribeVpcs",
+            "ec2:DescribeInstanceTopology",
+            "elasticloadbalancing:AddTags",
+            "elasticloadbalancing:AttachLoadBalancerToSubnets",
+            "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+            "elasticloadbalancing:CreateLoadBalancer",
+            "elasticloadbalancing:CreateLoadBalancerPolicy",
+            "elasticloadbalancing:CreateLoadBalancerListeners",
+            "elasticloadbalancing:ConfigureHealthCheck",
+            "elasticloadbalancing:DeleteLoadBalancer",
+            "elasticloadbalancing:DeleteLoadBalancerListeners",
+            "elasticloadbalancing:DescribeLoadBalancers",
+            "elasticloadbalancing:DescribeLoadBalancerAttributes",
+            "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+            "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+            "elasticloadbalancing:ModifyLoadBalancerAttributes",
+            "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+            "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+            "elasticloadbalancing:AddTags",
+            "elasticloadbalancing:CreateListener",
+            "elasticloadbalancing:CreateTargetGroup",
+            "elasticloadbalancing:DeleteListener",
+            "elasticloadbalancing:DeleteTargetGroup",
+            "elasticloadbalancing:DescribeListeners",
+            "elasticloadbalancing:DescribeLoadBalancerPolicies",
+            "elasticloadbalancing:DescribeTargetGroups",
+            "elasticloadbalancing:DescribeTargetHealth",
+            "elasticloadbalancing:ModifyListener",
+            "elasticloadbalancing:ModifyTargetGroup",
+            "elasticloadbalancing:RegisterTargets",
+            "elasticloadbalancing:DeregisterTargets",
+            "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+            "iam:CreateServiceLinkedRole",
+            "kms:DescribeKey"
+          ],
+          "Resource" : [
+            "*"
+          ]
+        }
+      ]
+    }
+  )
+}
+
+# https://cloud-provider-aws.sigs.k8s.io/prerequisites/
+resource "aws_iam_policy" "worker_ccm_policy" {
+  count = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? 1 : 0
+
+  name        = "${var.cluster_name}-worker-ccm-policy"
+  path        = "/"
+  description = "IAM policy for the worker nodes to allow CCM to manage AWS resources"
+
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Action" : [
+            "ec2:DescribeInstances",
+            "ec2:DescribeRegions",
+            "ecr:GetAuthorizationToken",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:GetRepositoryPolicy",
+            "ecr:DescribeRepositories",
+            "ecr:ListImages",
+            "ecr:BatchGetImage"
+          ],
+          "Resource" : "*"
+        }
+      ]
+    }
+  )
+}
+
 module "talos_control_plane_nodes" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 5.5"
@@ -10,6 +124,13 @@ module "talos_control_plane_nodes" {
   subnet_id                   = element(data.aws_subnets.public.ids, count.index)
   associate_public_ip_address = true
   tags                        = merge(var.tags, local.cluster_required_tags)
+  metadata_options            = var.metadata_options
+  create_iam_instance_profile = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? true : false
+  iam_instance_profile        = var.iam_instance_profile_control_plane
+  iam_role_use_name_prefix    = false
+  iam_role_policies = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? {
+    "${var.cluster_name}-control-plane-ccm-policy" : aws_iam_policy.control_plane_ccm_policy[0].arn,
+  } : {}
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
@@ -32,6 +153,13 @@ module "talos_worker_group" {
   subnet_id                   = element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
   associate_public_ip_address = true
   tags                        = merge(each.value.tags, var.tags, local.cluster_required_tags)
+  metadata_options            = var.metadata_options
+  create_iam_instance_profile = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? true : false
+  iam_instance_profile        = var.iam_instance_profile_worker
+  iam_role_use_name_prefix    = false
+  iam_role_policies = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? {
+    "${var.cluster_name}-worker-ccm-policy" : aws_iam_policy.worker_ccm_policy[0].arn,
+  } : {}
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
@@ -45,6 +173,8 @@ module "talos_worker_group" {
 resource "talos_machine_secrets" "this" {}
 
 data "talos_machine_configuration" "controlplane" {
+  for_each = { for index in range(var.controlplane_count) : index => index }
+
   cluster_name       = var.cluster_name
   cluster_endpoint   = "https://${module.elb_k8s_elb.elb_dns_name}"
   machine_type       = "controlplane"
@@ -77,12 +207,11 @@ data "talos_machine_configuration" "worker_group" {
 }
 
 resource "talos_machine_configuration_apply" "controlplane" {
-  count = var.controlplane_count
-
+  for_each                    = { for index, instance in module.talos_control_plane_nodes : index => instance }
   client_configuration        = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.controlplane.machine_configuration
-  endpoint                    = module.talos_control_plane_nodes[count.index].public_ip
-  node                        = module.talos_control_plane_nodes[count.index].private_ip
+  machine_configuration_input = data.talos_machine_configuration.controlplane[each.key].machine_configuration
+  endpoint                    = module.talos_control_plane_nodes[each.key].public_ip
+  node                        = module.talos_control_plane_nodes[each.key].private_ip
 }
 
 resource "talos_machine_configuration_apply" "worker_group" {
