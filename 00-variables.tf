@@ -9,6 +9,18 @@ variable "cluster_id" {
   type        = number
 }
 
+variable "iam_instance_profile_controller" {
+  description = "IAM instance profile to attach to the instances."
+  type        = string
+  default = null
+  
+}
+
+variable "iam_instance_profile_worker" {
+  description = "IAM instance profile to attach to the instances."
+  type        = string
+  default = null
+}
 variable "cluster_architecture" {
   default     = "amd64"
   description = "Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control_plane.instance_type and worker_groups.instance_type with an ARM64-based instance type like 'm7g.large'."

@@ -10,6 +10,12 @@ module "talos_control_plane_nodes" {
   subnet_id                   = element(data.aws_subnets.public.ids, count.index)
   associate_public_ip_address = true
   tags                        = merge(var.tags, local.cluster_required_tags)
+  metadata_options            = {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    instance_metadata_tags    = "disabled"
+  }
+  iam_instance_profile        = var.iam_instance_profile_controller
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
@@ -32,6 +38,7 @@ module "talos_worker_group" {
   subnet_id                   = element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
   associate_public_ip_address = true
   tags                        = merge(each.value.tags, var.tags, local.cluster_required_tags)
+  iam_instance_profile        = var.iam_instance_profile_worker
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
