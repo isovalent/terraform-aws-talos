@@ -21,6 +21,17 @@ variable "iam_instance_profile_worker" {
   type        = string
   default = null
 }
+
+variable metadata_options {
+  description = "Metadata to attach to the instances."
+  type        = map(string)
+  default = {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    instance_metadata_tags    = "disabled"
+  }
+}
+
 variable "cluster_architecture" {
   default     = "amd64"
   description = "Cluster architecture. Choose 'arm64' or 'amd64'. If you choose 'arm64', ensure to also override the control_plane.instance_type and worker_groups.instance_type with an ARM64-based instance type like 'm7g.large'."
