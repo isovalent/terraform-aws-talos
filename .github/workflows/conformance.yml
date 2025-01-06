@@ -35,6 +35,7 @@ jobs:
             kube-proxy-replacement: "true"
             socketlb: false
             bpf-masquerade: true
+            bpf-hostlegacyrouting: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
@@ -49,6 +50,7 @@ jobs:
             kube-proxy-replacement: "true"
             socketlb: false
             bpf-masquerade: true
+            bpf-hostlegacyrouting: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
@@ -63,6 +65,7 @@ jobs:
             kube-proxy-replacement: "false"
             socketlb: true
             bpf-masquerade: false
+            bpf-hostlegacyrouting: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
@@ -77,6 +80,7 @@ jobs:
             kube-proxy-replacement: "false"
             socketlb: true
             bpf-masquerade: true
+            bpf-hostlegacyrouting: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
@@ -90,6 +94,7 @@ jobs:
             kube-proxy-replacement: "true"
             socketlb: false
             bpf-masquerade: true
+            bpf-hostlegacyrouting: true
             ipam-mode: 'cluster-pool'
             ipv4: true
             ipv6: false
@@ -104,6 +109,7 @@ jobs:
             kube-proxy-replacement: "true"
             socketlb: false
             bpf-masquerade: true
+            bpf-hostlegacyrouting: true
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
@@ -163,6 +169,7 @@ jobs:
             --set ipv4.enabled=${{ matrix.config.ipv4 }} \
             --set ipv6.enabled=${{ matrix.config.ipv6 }} \
             --set bpf.masquerade=${{ matrix.config.bpf-masquerade }} \
+            --set bpf.hostLegacyRouting=${{ matrix.config.bpf-hostlegacyrouting }} \
             --set kubeProxyReplacement=${{ matrix.config.kube-proxy-replacement }} \
             --set socketLB.enabled=${{ matrix.config.socketlb }} \
             --set ipam.mode=${{ matrix.config.ipam-mode }} \
