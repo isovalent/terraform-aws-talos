@@ -30,7 +30,10 @@ locals {
       apiServer = {
         certSANs = [
           module.elb_k8s_elb.elb_dns_name
-        ]
+        ],
+       extraArgs = {
+          enable-admission-plugins = var.admission_plugins
+        }  
       },
       controllerManager = {
         extraArgs = {
@@ -64,6 +67,7 @@ locals {
       kubelet = {
         extraArgs = {
           rotate-server-certificates = true
+          cloud-provider = "external"
         }
       }
     }

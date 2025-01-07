@@ -166,3 +166,8 @@ variable "config_patch_files" {
   description = "Path to talos config path files that applies to all nodes"
   type        = list(string)
 }
+variable "admission_plugins" {
+  default     = "MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ServiceAccount"
+  description = "List of admission plugins to enable on the API server."
+  type        = string
+}
