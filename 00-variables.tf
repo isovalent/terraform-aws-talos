@@ -10,25 +10,25 @@ variable "cluster_id" {
 }
 
 variable "iam_instance_profile_controller" {
-  description = "IAM instance profile to attach to the instances."
+  description = "IAM instance profile to attach to the controller instances."
   type        = string
-  default = null
-  
+  default     = null
+
 }
 
 variable "iam_instance_profile_worker" {
-  description = "IAM instance profile to attach to the instances."
+  description = "IAM instance profile to attach to the worker instances."
   type        = string
-  default = null
+  default     = null
 }
 
-variable metadata_options {
+variable "metadata_options" {
   description = "Metadata to attach to the instances."
   type        = map(string)
   default = {
-    http_endpoint               = "enabled"
-    http_tokens                 = "required"
-    instance_metadata_tags    = "disabled"
+    http_endpoint          = "enabled"
+    http_tokens            = "required"
+    instance_metadata_tags = "disabled"
   }
 }
 

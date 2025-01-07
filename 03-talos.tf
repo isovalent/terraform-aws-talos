@@ -50,31 +50,31 @@ resource "talos_machine_secrets" "this" {}
 
 data "talos_machine_configuration" "controlplane" {
   for_each = { for index, instance in module.talos_control_plane_nodes : index => instance }
-  
+
   cluster_name       = var.cluster_name
   cluster_endpoint   = "https://${module.elb_k8s_elb.elb_dns_name}"
   machine_type       = "controlplane"
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.kubernetes_version
   talos_version      = var.talos_version
-  config_patches     = concat(
-                              local.config_patches_common,
-                              [yamlencode(local.common_config_patch)],
-                              [yamlencode(local.config_cilium_patch)],
-                              [yamlencode(
-                                {
-                                  machine = {
-                                    kubelet = {
-                                      extraArgs = {
-                                        hostname-override = module.talos_control_plane_nodes[for_each].id
-                                      }
-                                    }
-                                  }
-                                }
-                              )
-                              ],
-                              [for path in var.control_plane.config_patch_files : file(path)]
-                            )
+  config_patches = concat(
+    local.config_patches_common,
+    [yamlencode(local.common_config_patch)],
+    [yamlencode(local.config_cilium_patch)],
+    [yamlencode(
+      {
+        machine = {
+          kubelet = {
+            extraArgs = {
+              hostname-override = module.talos_control_plane_nodes[for_each].id
+            }
+          }
+        }
+      }
+      )
+    ],
+    [for path in var.control_plane.config_patch_files : file(path)]
+  )
 }
 
 data "talos_machine_configuration" "worker_group" {
@@ -86,25 +86,25 @@ data "talos_machine_configuration" "worker_group" {
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.kubernetes_version
   talos_version      = var.talos_version
-  config_patches     = concat(
-                              local.config_patches_common,
-                              [yamlencode(local.common_config_patch)],
-                              [yamlencode(local.config_cilium_patch)],
-                              [yamlencode(
-                                {
-                                  machine = {
-                                    kubelet = {
-                                      extraArgs = {
-                                        hostname-override = module.talos_worker_group[each.key].id
-                                      }
+  config_patches = concat(
+    local.config_patches_common,
+    [yamlencode(local.common_config_patch)],
+    [yamlencode(local.config_cilium_patch)],
+    [yamlencode(
+      {
+        machine = {
+          kubelet = {
+            extraArgs = {
+              hostname-override = module.talos_worker_group[each.key].id
+            }
 
-                                    }
-                                  }
-                                }
-                              )
-                              ],
-                              [for path in each.value.config_patch_files : file(path)]
-                            )
+          }
+        }
+      }
+      )
+    ],
+    [for path in each.value.config_patch_files : file(path)]
+  )
 }
 
 resource "talos_machine_configuration_apply" "controlplane" {
