@@ -30,6 +30,14 @@ kubeProxyReplacement: "true"
 k8sServiceHost: ${KUBE_APISERVER_HOST}
 k8sServicePort: ${KUBE_APISERVER_PORT}
 
+# BPF optimizations
+bpf:
+  masquerade: true
+  # Legacy host routing is required when Talos' forwardKubeDNSToHost is used
+  # together with Cilium's eBPF host-routing.
+  # See https://docs.cilium.io/en/latest/operations/performance/tuning/#ebpf-host-routing
+  hostLegacyRouting: true
+
 # -- Monitoring and Flow Visibility
 
 # Enable Cilium Hubble to gain visibility
