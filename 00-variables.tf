@@ -9,14 +9,14 @@ variable "cluster_id" {
   type        = number
 }
 
-variable "iam_instance_profile_controller" {
-  description = "IAM instance profile to attach to the controller instances."
+variable "iam_instance_profile_control_plane" {
+  description = "IAM instance profile to attach to the control plane instances to give AWS CCM the sufficient rights to execute."
   type        = string
   default     = null
 }
 
 variable "iam_instance_profile_worker" {
-  description = "IAM instance profile to attach to the worker instances."
+  description = "IAM instance profile to attach to the worker instances to give AWS CCM the sufficient rights to execute."
   type        = string
   default     = null
 }

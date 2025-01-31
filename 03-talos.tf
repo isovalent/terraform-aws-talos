@@ -11,7 +11,7 @@ module "talos_control_plane_nodes" {
   associate_public_ip_address = true
   tags                        = merge(var.tags, local.cluster_required_tags)
   metadata_options            = var.metadata_options
-  iam_instance_profile        = var.iam_instance_profile_controller
+  iam_instance_profile        = var.iam_instance_profile_control_plane
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
