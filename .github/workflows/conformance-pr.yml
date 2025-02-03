@@ -13,11 +13,11 @@ jobs:
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.16.5'
+          - '1.16.6'
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.15.12'
+          - '1.15.13'
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.14.18'
+          - '1.14.19'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.8.4'
@@ -40,7 +40,7 @@ jobs:
             ingress-controller: false
     steps:
       - name: Checkout
-        uses: actions/checkout@cbb722410c2e876e24abbe8de2cc27693e501dcb
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Configure AWS credentials from shared services account
@@ -62,7 +62,7 @@ jobs:
             --owner "isovalent/terraform-aws-talos"
           make apply
       - name: Install Cilium CLI
-        uses: cilium/cilium-cli@c52e8c38e6d6235bd8e6e961199a984275547d6f # v0.16.22
+        uses: cilium/cilium-cli@f313219850d324b516748ff7b00a6f9fa30d34ae # v0.16.23
         with:
           repository: cilium/cilium-cli
           release-version: v0.15.20

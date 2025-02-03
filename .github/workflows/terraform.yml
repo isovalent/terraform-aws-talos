@@ -9,15 +9,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@cbb722410c2e876e24abbe8de2cc27693e501dcb
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: terraform fmt
-        uses: dflook/terraform-fmt-check@2bf43ab3454607c0f8567abc333f8208447ec03f
+        uses: dflook/terraform-fmt-check@825f2a4baa59de608a2d105d63193079e973c6d3
         with:
           path: .
       - name: terraform fmt
-        uses: dflook/terraform-fmt-check@2bf43ab3454607c0f8567abc333f8208447ec03f
+        uses: dflook/terraform-fmt-check@825f2a4baa59de608a2d105d63193079e973c6d3
         with:
           path: example
   docs:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@cbb722410c2e876e24abbe8de2cc27693e501dcb
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Render terraform docs inside the README.md and push changes back to PR branch
