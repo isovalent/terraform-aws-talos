@@ -30,11 +30,15 @@ locals {
       apiServer = {
         certSANs = [
           module.elb_k8s_elb.elb_dns_name
-        ]
+        ],
+        extraArgs = {
+          enable-admission-plugins = var.admission_plugins
+        }
       },
       controllerManager = {
         extraArgs = {
           allocate-node-cidrs = var.allocate_node_cidrs
+          cloud-provider      = "external"
         }
       },
       network = {
@@ -64,12 +68,13 @@ locals {
       kubelet = {
         extraArgs = {
           rotate-server-certificates = true
+          cloud-provider             = "external"
         }
       }
     }
   }
 
-  # Used to configure Cilium Kube-Proxy replacement
+# Used to configure Cilium Kube-Proxy replacement  
   config_cilium_patch = {
     cluster = {
       proxy = {
