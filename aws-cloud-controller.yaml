@@ -175,6 +175,7 @@ spec:
           args:
             - --v=2
             - --cloud-provider=aws
+            - --configure-cloud-routes=false
           resources:
             requests:
               cpu: 200m
