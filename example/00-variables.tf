@@ -119,7 +119,7 @@ variable "deploy_external_cloud_provider_iam_policies" {
 }
 
 variable "external_cloud_provider_manifest" {
-  default     = "https://raw.githubusercontent.com/isovalent/terraform-aws-talos/main/aws-cloud-controller.yaml"
+  default     = "https://raw.githubusercontent.com/isovalent/terraform-aws-talos/main/manifests/aws-cloud-controller.yaml"
   description = "externalCloudProvider manifest to be applied if var.enable_external_cloud_provider is enabled. If you want to deploy it manually (e.g., via Helm chart), enable var.enable_external_cloud_provider but set this value to an empty string (\"\"). See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/."
   type        = string
 }
