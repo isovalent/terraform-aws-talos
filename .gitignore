@@ -16,3 +16,4 @@ tf/
 test/conformance/env.tfvars
 example/04-tetragon-values-override.yaml
 example/tracingpolicies*
+example/cilium-sysdump-*.zip
