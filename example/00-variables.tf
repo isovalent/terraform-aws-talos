@@ -102,6 +102,24 @@ variable "disable_kube_proxy" {
   type        = bool
 }
 
+variable "allow_workload_on_cp_nodes" {
+  default     = false
+  description = "Allow workloads on CP nodes or not. Allowing it means Talos Linux default taints are removed from CP nodes which is typically required for single-node clusters. More details here: https://www.talos.dev/v1.5/talos-guides/howto/workers-on-controlplane/"
+  type        = bool
+}
+
+variable "controlplane_count" {
+  default     = 3
+  description = "Defines how many controlplane nodes are deployed in the cluster."
+  type        = number
+}
+
+variable "workers_count" {
+  default     = 2
+  description = "Defines how many worker nodes are deployed in the cluster."
+  type        = number
+}
+
 variable "enable_external_cloud_provider" {
   default     = false
   description = "Whether to enable or disable externalCloudProvider support. See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/."
