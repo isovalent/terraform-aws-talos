@@ -15,9 +15,9 @@ module "talos" {
   allocate_node_cidrs  = var.allocate_node_cidrs
   disable_kube_proxy   = var.disable_kube_proxy
   # For single-node cluster support:
-  #allow_workload_on_cp_nodes = true
-  #controlplane_count         = 1
-  #workers_count              = 0
+  allow_workload_on_cp_nodes = var.allow_workload_on_cp_nodes
+  controlplane_count         = var.controlplane_count
+  workers_count              = var.workers_count
   // VPC needs to be created in advance via https://github.com/isovalent/terraform-aws-vpc
   vpc_id                                      = module.vpc.id
   pod_cidr                                    = var.pod_cidr

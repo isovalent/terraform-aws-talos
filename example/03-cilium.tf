@@ -5,10 +5,9 @@ module "cilium" {
     module.talos
   ]
 
-  cilium_helm_release_name           = "cilium"
-  wait_for_total_control_plane_nodes = true
-  # For single-node cluster support:
-  #total_control_plane_nodes               = 1
+  cilium_helm_release_name                = "cilium"
+  wait_for_total_control_plane_nodes      = true
+  total_control_plane_nodes               = var.controlplane_count
   cilium_helm_values_file_path            = var.cilium_helm_values_file_path
   cilium_helm_version                     = var.cilium_helm_version
   cilium_helm_chart                       = var.cilium_helm_chart
