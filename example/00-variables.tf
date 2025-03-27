@@ -67,13 +67,13 @@ variable "tags" {
 
 # talos module
 variable "talos_version" {
-  default     = "v1.9.1"
+  default     = "v1.9.5"
   description = "Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
   type        = string
 }
 
 variable "kubernetes_version" {
-  default     = "1.31.4"
+  default     = "1.32.3"
   description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/."
   type        = string
 }
@@ -138,7 +138,7 @@ variable "cilium_helm_chart" {
 }
 
 variable "cilium_helm_version" {
-  default     = "1.16.5"
+  default     = "1.17.2"
   description = "The version of the used Helm chart. Check https://github.com/cilium/cilium/releases to see available versions."
   type        = string
 }
@@ -193,7 +193,7 @@ variable "tetragon_tracingpolicy_directory" {
 }
 
 variable "tetragon_helm_version" {
-  default     = "1.3.0"
+  default     = "1.4.0"
   description = "The version of the Tetragon Helm chart to install."
   type        = string
 }
