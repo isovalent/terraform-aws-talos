@@ -1,5 +1,5 @@
 module "tetragon" {
-  source = "git::https://github.com/isovalent/terraform-k8s-tetragon.git?ref=v0.6"
+  source = "git::https://github.com/isovalent/terraform-k8s-tetragon.git?ref=v0.6.1"
 
   # Wait until Cilium CNI is done.
   depends_on = [
