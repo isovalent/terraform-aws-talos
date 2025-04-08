@@ -4,7 +4,7 @@ The Customer Reproduction Environment is based on the contents of:
 * `03-cilium-values.yaml`
 * `terraform.tfvars` <- to be created by you
 
-These files will need to be updated if changes are made to the customer's environment. 
+These files will need to be updated if changes are made to the customer's environment.
 
 ## Creating the CuTE
 
@@ -35,7 +35,7 @@ owner        = "philip"
 3. Make sure the AWS user you have configured has enough privileges to create the necessary resources.
 If necessary, grab the credentials for the AWS `terraform` user from [here](https://start.1password.com/open/i?a=JEHLBUMZZVGXXEGBEHTXZBCHCE&v=lgf2d25rbg3j2br3otrai6m63a&i=abtnwj6uurafhm4qs76taoaacm&h=isovalent.1password.com) and use that one.
 
-4. Run the following commands: 
+4. Run the following commands:
 
 ```
 make apply
@@ -110,7 +110,7 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 |------|--------|---------|
 | <a name="module_cilium"></a> [cilium](#module\_cilium) | git::https://github.com/isovalent/terraform-k8s-cilium.git | v1.6.5 |
 | <a name="module_talos"></a> [talos](#module\_talos) | ../ | n/a |
-| <a name="module_tetragon"></a> [tetragon](#module\_tetragon) | git::https://github.com/isovalent/terraform-k8s-tetragon.git | v0.5 |
+| <a name="module_tetragon"></a> [tetragon](#module\_tetragon) | git::https://github.com/isovalent/terraform-k8s-tetragon.git | v0.6 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | git::https://github.com/isovalent/terraform-aws-vpc.git | v1.10 |
 
 ### Resources
