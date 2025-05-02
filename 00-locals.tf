@@ -72,7 +72,18 @@ locals {
           rotate-server-certificates = true
         },
         registerWithFQDN = true
-      }
+      },
+      files = [
+        {
+          content = <<EOF
+[plugins]
+  [plugins."io.containerd.nri.v1.nri"]
+    disable = ${var.disable_containerd_nri_plugins}
+EOF
+          path : "/etc/cri/conf.d/20-customization.part",
+          op : "create"
+        }
+      ]
     }
   }
 

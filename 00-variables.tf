@@ -75,6 +75,12 @@ variable "disable_kube_proxy" {
   type        = bool
 }
 
+variable "disable_containerd_nri_plugins" {
+  default     = true
+  description = "Whether to disable the Talos containerd NRI plugins or not. Talos disables it by default. See https://www.talos.dev/latest/talos-guides/configuration/containerd/#enabling-nri-plugins. Supported since Talos v1.9.2 (see https://github.com/siderolabs/talos/discussions/10068)."
+  type        = bool
+}
+
 variable "allow_workload_on_cp_nodes" {
   default     = false
   description = "Allow workloads on CP nodes or not. Allowing it means Talos Linux default taints are removed from CP nodes which is typically required for single-node clusters. More details here: https://www.talos.dev/v1.5/talos-guides/howto/workers-on-controlplane/"

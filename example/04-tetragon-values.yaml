@@ -4,6 +4,18 @@ tetragon:
   enablePolicyFilter: true
   enableProcessCred: true
   enableProcessNs: true
+  # Optionally, enable Tetragon's containerd NRI container runtime hook.
+  # Also set var.disable_containerd_nri_plugins to 'true' if you do so. See
+  # https://tetragon.io/docs/installation/runtime-hooks/
+#   cri:
+#     enable: true
+#     hostPath: "/run/containerd/containerd.sock"
+#   cgidmap:
+#     enabled: true
+# rthooks:
+#   enabled: true
+#   interface: "nri-hook"
+#   failAllowNamespaces: kube-system
 export:
   mode: stdout
   filenames:
