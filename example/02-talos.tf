@@ -3,17 +3,18 @@ module "talos" {
   source = "../"
 
   // Supported Talos versions (and therefore K8s versions) can be found here: https://github.com/siderolabs/talos/releases
-  talos_version        = var.talos_version
-  kubernetes_version   = var.kubernetes_version
-  cluster_name         = var.cluster_name
-  cluster_id           = var.cluster_id
-  cluster_architecture = var.cluster_architecture
-  control_plane        = var.control_plane
-  worker_groups        = var.worker_groups
-  region               = var.region
-  tags                 = local.tags
-  allocate_node_cidrs  = var.allocate_node_cidrs
-  disable_kube_proxy   = var.disable_kube_proxy
+  talos_version                  = var.talos_version
+  kubernetes_version             = var.kubernetes_version
+  cluster_name                   = var.cluster_name
+  cluster_id                     = var.cluster_id
+  cluster_architecture           = var.cluster_architecture
+  control_plane                  = var.control_plane
+  worker_groups                  = var.worker_groups
+  region                         = var.region
+  tags                           = local.tags
+  allocate_node_cidrs            = var.allocate_node_cidrs
+  disable_kube_proxy             = var.disable_kube_proxy
+  disable_containerd_nri_plugins = var.disable_containerd_nri_plugins
   # For single-node cluster support:
   allow_workload_on_cp_nodes = var.allow_workload_on_cp_nodes
   controlplane_count         = var.controlplane_count
