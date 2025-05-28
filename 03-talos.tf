@@ -125,6 +125,7 @@ module "talos_control_plane_nodes" {
   associate_public_ip_address = true
   tags                        = merge(var.tags, local.cluster_required_tags)
   metadata_options            = var.metadata_options
+  ignore_ami_changes          = true
   create_iam_instance_profile = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? true : false
   iam_instance_profile        = var.iam_instance_profile_control_plane
   iam_role_use_name_prefix    = false
@@ -154,6 +155,7 @@ module "talos_worker_group" {
   associate_public_ip_address = true
   tags                        = merge(each.value.tags, var.tags, local.cluster_required_tags)
   metadata_options            = var.metadata_options
+  ignore_ami_changes          = true
   create_iam_instance_profile = var.enable_external_cloud_provider && var.deploy_external_cloud_provider_iam_policies ? true : false
   iam_instance_profile        = var.iam_instance_profile_worker
   iam_role_use_name_prefix    = false
@@ -170,11 +172,11 @@ module "talos_worker_group" {
   ]
 }
 
-resource "talos_machine_secrets" "this" {}
+resource "talos_machine_secrets" "this" {
+  talos_version = var.talos_version
+}
 
 data "talos_machine_configuration" "controlplane" {
-  for_each = { for index in range(var.controlplane_count) : index => index }
-
   cluster_name       = var.cluster_name
   cluster_endpoint   = "https://${module.elb_k8s_elb.elb_dns_name}"
   machine_type       = "controlplane"
@@ -209,7 +211,7 @@ data "talos_machine_configuration" "worker_group" {
 resource "talos_machine_configuration_apply" "controlplane" {
   for_each                    = { for index, instance in module.talos_control_plane_nodes : index => instance }
   client_configuration        = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.controlplane[each.key].machine_configuration
+  machine_configuration_input = data.talos_machine_configuration.controlplane.machine_configuration
   endpoint                    = module.talos_control_plane_nodes[each.key].public_ip
   node                        = module.talos_control_plane_nodes[each.key].private_ip
 }
