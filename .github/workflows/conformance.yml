@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 jobs:
   setup-and-test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       contents: read
@@ -19,16 +19,16 @@ jobs:
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
+          - '1.17.4'
+          # renovate: datasource=github-releases depName=cilium/cilium
           - '1.16.11'
           # renovate: datasource=github-releases depName=cilium/cilium
           - '1.15.18'
-          # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.14.19'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.8.4'
+          - 'v1.10.4'
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.7.7'
+          - 'v1.9.6'
         config:
           - name: 'Vanilla'
             kube-proxy: false
@@ -230,4 +230,3 @@ jobs:
         with:
           channel-id: 'C02T57KV69Y'
           slack-message: "Talos AWS Terraform: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ needs.setup-and-test.result == 'success' && 'workflow passed!> :tada::tada::tada:' || 'workflow failed!> :rotating_light::rotating_light::rotating_light:' }}"
-
