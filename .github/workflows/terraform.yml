@@ -13,11 +13,11 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: terraform fmt
-        uses: dflook/terraform-fmt-check@3992bb501836411442fdd6b1fc91dc8823365b62
+        uses: dflook/terraform-fmt-check@5a8bca2b9787a41e8017086754f8e016ac03276f
         with:
           path: .
       - name: terraform fmt
-        uses: dflook/terraform-fmt-check@3992bb501836411442fdd6b1fc91dc8823365b62
+        uses: dflook/terraform-fmt-check@5a8bca2b9787a41e8017086754f8e016ac03276f
         with:
           path: example
   docs:
