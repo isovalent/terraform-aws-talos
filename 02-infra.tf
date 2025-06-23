@@ -1,6 +1,6 @@
 module "cluster_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 5.1"
+  version = "~> 5.3"
 
   name        = var.cluster_name
   description = "Allow all intra-cluster and egress traffic"
@@ -33,7 +33,7 @@ module "cluster_sg" {
 
 module "kubernetes_api_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/https-443"
-  version = "~> 5.1"
+  version = "~> 5.3"
 
   name                = "${var.cluster_name}-k8s-api"
   description         = "Allow access to the Kubernetes API"
