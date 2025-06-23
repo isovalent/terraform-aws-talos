@@ -20,9 +20,9 @@ destroy:
 init:
 	@if [ ! -f .timestamp ]; then\
 		if [ "$$(uname)" == "Darwin" ]; then\
-			out=$$(date -u -v+3d '+%Y-%m-%d') && echo -n "$$out" > .timestamp;\
+			out=$$(date -u -v+1d '+%Y-%m-%d') && echo -n "$$out" > .timestamp;\
 		else\
-			out=$$(date -u -d '+3 days' '+%Y-%m-%d') && echo -n "$$out" > .timestamp;\
+			out=$$(date -u -d '+1 days' '+%Y-%m-%d') && echo -n "$$out" > .timestamp;\
 		fi;\
 	fi
 	terraform init --upgrade
