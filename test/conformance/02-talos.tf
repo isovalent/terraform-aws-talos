@@ -11,6 +11,8 @@ module "talos" {
   workers_count              = 1
   controlplane_count         = 1
   allow_workload_on_cp_nodes = true
+  # Limit which source IP is able to access ingress port 6443 and 50000 (configured on the SG):
+  external_source_cidrs = ["${data.external.public_ip.result.ip}/32"]
 
   // VPC needs to be created in advance via https://github.com/isovalent/terraform-aws-vpc
   vpc_id             = module.vpc.id
