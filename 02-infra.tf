@@ -13,13 +13,14 @@ module "cluster_sg" {
     },
   ]
 
+  ingress_cidr_blocks = length(var.external_source_cidrs) != 0 ? var.external_source_cidrs : [var.talos_api_allowed_cidr]
+
   ingress_with_cidr_blocks = [
     {
       from_port   = 50000
       to_port     = 50000
       protocol    = "tcp"
-      cidr_blocks = var.talos_api_allowed_cidr
-      description = "Talos API Access"
+      description = "Talos API"
     },
   ]
 
@@ -38,8 +39,8 @@ module "kubernetes_api_sg" {
   name                = "${var.cluster_name}-k8s-api"
   description         = "Allow access to the Kubernetes API"
   vpc_id              = var.vpc_id
-  ingress_cidr_blocks = [var.kubernetes_api_allowed_cidr]
   tags                = var.tags
+  ingress_cidr_blocks = length(var.external_source_cidrs) != 0 ? var.external_source_cidrs : [var.kubernetes_api_allowed_cidr]
 }
 
 module "elb_k8s_elb" {

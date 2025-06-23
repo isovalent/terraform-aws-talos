@@ -154,14 +154,20 @@ variable "vpc_cidr" {
   type        = string
 }
 
+variable "external_source_cidrs" {
+  default     = []
+  description = "Specify the external source CIDRs (use /32 for specific IP addresses) allowed for inbound traffic. It can be used to override var.talos_api_allowed_cidr and var.kubernetes_api_allowed_cidr at the same time."
+  type        = list(string)
+}
+
 variable "talos_api_allowed_cidr" {
-  default     = "0.0.0.0/0"
+  default     = ""
   description = "The CIDR from which to allow to access the Talos API"
   type        = string
 }
 
 variable "kubernetes_api_allowed_cidr" {
-  default     = "0.0.0.0/0"
+  default     = ""
   description = "The CIDR from which to allow to access the Kubernetes API"
   type        = string
 }

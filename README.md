@@ -26,15 +26,18 @@ module "talos" {
   source = "git::https://github.com/isovalent/terraform-aws-talos?ref=<RELEASE_TAG>"
 
   // Supported Talos versions (and therefore K8s versions) can be found here: https://github.com/siderolabs/talos/releases
-  talos_version      = "v1.10.4"
-  kubernetes_version = "1.33.1"
-  cluster_name       = "talos-cute"
-  region             = "eu-west-1"
-  tags               = local.tags
+  talos_version         = "v1.10.4"
+  kubernetes_version    = "1.33.1"
+  cluster_name          = "talos-cute"
+  region                = "eu-west-1"
+  tags                  = local.tags
   // VPC needs to be created in advance via https://github.com/isovalent/terraform-aws-vpc
-  vpc_id             = module.vpc.id
-  pod_cidr           = "100.64.0.0/14"
-  service_cidr       = "100.68.0.0/16"
+  vpc_id                = module.vpc.id
+  pod_cidr              = "100.64.0.0/14"
+  service_cidr          = "100.68.0.0/16"
+  # Configure the allowed source CIDR ranges globally via var.external_source_cidrs.
+  # Alternatively, via var.talos_api_allowed_cidr or var.kubernetes_api_allowed_cidr.
+  external_source_cidrs = "A.B.C.D/E"
 }
 ```
 
@@ -110,16 +113,17 @@ module "talos" {
 | <a name="input_disable_kube_proxy"></a> [disable\_kube\_proxy](#input\_disable\_kube\_proxy) | Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed. | `bool` | `true` | no |
 | <a name="input_enable_external_cloud_provider"></a> [enable\_external\_cloud\_provider](#input\_enable\_external\_cloud\_provider) | Whether to enable or disable externalCloudProvider support. See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/. | `bool` | `false` | no |
 | <a name="input_external_cloud_provider_manifest"></a> [external\_cloud\_provider\_manifest](#input\_external\_cloud\_provider\_manifest) | externalCloudProvider manifest to be applied if var.enable\_external\_cloud\_provider is enabled. If you want to deploy it manually (e.g., via Helm chart), enable var.enable\_external\_cloud\_provider but set this value to an empty string (""). See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/. | `string` | `"https://raw.githubusercontent.com/isovalent/terraform-aws-talos/main/manifests/aws-cloud-controller.yaml"` | no |
+| <a name="input_external_source_cidrs"></a> [external\_source\_cidrs](#input\_external\_source\_cidrs) | Specify the external source CIDRs (use /32 for specific IP addresses) allowed for inbound traffic. It can be used to override var.talos\_api\_allowed\_cidr and var.kubernetes\_api\_allowed\_cidr at the same time. | `list(string)` | `[]` | no |
 | <a name="input_iam_instance_profile_control_plane"></a> [iam\_instance\_profile\_control\_plane](#input\_iam\_instance\_profile\_control\_plane) | IAM instance profile to attach to the control plane instances to give AWS CCM the sufficient rights to execute. | `string` | `null` | no |
 | <a name="input_iam_instance_profile_worker"></a> [iam\_instance\_profile\_worker](#input\_iam\_instance\_profile\_worker) | IAM instance profile to attach to the worker instances to give AWS CCM the sufficient rights to execute. | `string` | `null` | no |
-| <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `"0.0.0.0/0"` | no |
+| <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `""` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/. For example '1.29.3'. | `string` | `""` | no |
 | <a name="input_metadata_options"></a> [metadata\_options](#input\_metadata\_options) | Metadata to attach to the instances. | `map(string)` | <pre>{<br/>  "http_endpoint": "enabled",<br/>  "http_put_response_hop_limit": 1,<br/>  "http_tokens": "optional"<br/>}</pre> | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for Pods. Only required in case allocate\_node\_cidrs is set to 'true'. Otherwise, simply configure it inside Cilium's Helm values. | `string` | `"100.64.0.0/14"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the Talos Linux cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the cluster. | `map(string)` | n/a | yes |
-| <a name="input_talos_api_allowed_cidr"></a> [talos\_api\_allowed\_cidr](#input\_talos\_api\_allowed\_cidr) | The CIDR from which to allow to access the Talos API | `string` | `"0.0.0.0/0"` | no |
+| <a name="input_talos_api_allowed_cidr"></a> [talos\_api\_allowed\_cidr](#input\_talos\_api\_allowed\_cidr) | The CIDR from which to allow to access the Talos API | `string` | `""` | no |
 | <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.10.4"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC where to place the VMs. | `string` | n/a | yes |
