@@ -15,6 +15,8 @@ module "talos" {
   allocate_node_cidrs            = var.allocate_node_cidrs
   disable_kube_proxy             = var.disable_kube_proxy
   disable_containerd_nri_plugins = var.disable_containerd_nri_plugins
+  # Limit which source IP is able to access ingress port 6443 and 50000 (configured on the SG):
+  external_source_cidrs = ["${data.external.public_ip.result.ip}/32"]
   # For single-node cluster support:
   allow_workload_on_cp_nodes = var.allow_workload_on_cp_nodes
   controlplane_count         = var.controlplane_count
