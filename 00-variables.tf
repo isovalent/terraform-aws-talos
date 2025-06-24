@@ -155,21 +155,8 @@ variable "vpc_cidr" {
 }
 
 variable "external_source_cidrs" {
-  default     = []
-  description = "Specify the external source CIDRs (use /32 for specific IP addresses) allowed for inbound traffic. It can be used to override var.talos_api_allowed_cidr and var.kubernetes_api_allowed_cidr at the same time."
+  description = "Specify the external source CIDRs (use /32 for specific IP addresses) allowed for inbound traffic."
   type        = list(string)
-}
-
-variable "talos_api_allowed_cidr" {
-  default     = ""
-  description = "The CIDR from which to allow to access the Talos API"
-  type        = string
-}
-
-variable "kubernetes_api_allowed_cidr" {
-  default     = ""
-  description = "The CIDR from which to allow to access the Kubernetes API"
-  type        = string
 }
 
 variable "config_patch_files" {
@@ -204,4 +191,10 @@ variable "external_cloud_provider_manifest" {
   default     = "https://raw.githubusercontent.com/isovalent/terraform-aws-talos/main/manifests/aws-cloud-controller.yaml"
   description = "externalCloudProvider manifest to be applied if var.enable_external_cloud_provider is enabled. If you want to deploy it manually (e.g., via Helm chart), enable var.enable_external_cloud_provider but set this value to an empty string (\"\"). See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/."
   type        = string
+}
+
+variable "use_private_ips_only" {
+  description = "When true (default), Talos cluster nodes will NOT receive public IPv4 addresses. The Kubernetes/Talos API is still exposed via a public ELB (restricted by security groups via var.external_source_cidrs). When set to false, public IPv4 addresses are allocated and the ELB is internet-facing."
+  type        = bool
+  default     = true
 }

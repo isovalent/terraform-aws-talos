@@ -8,7 +8,7 @@ data "aws_vpc" "vpc" {
 // Used to list all public subnets in the VPC.
 data "aws_subnets" "public" {
   depends_on = [
-    null_resource.wait_for_public_subnets,
+    null_resource.wait_for_subnets,
   ]
   filter {
     name = "vpc-id"
@@ -24,11 +24,31 @@ data "aws_subnets" "public" {
   }
 }
 
+// Used to list all private subnets in the VPC.
+// This is required when `var.use_private_ips_only` is enabled (default).
+data "aws_subnets" "private" {
+  depends_on = [
+    null_resource.wait_for_subnets,
+  ]
+  filter {
+    name = "vpc-id"
+    values = [
+      data.aws_vpc.vpc.id
+    ]
+  }
+  filter {
+    name = "tag:type"
+    values = [
+      "private"
+    ]
+  }
+}
+
 // Used to wait for at least one of the subnets to exist.
 // Unfortunately there doesn't seem to be a better way to do this in Terraform.
-resource "null_resource" "wait_for_public_subnets" {
+resource "null_resource" "wait_for_subnets" {
   provisioner "local-exec" {
-    command = "${path.module}/scripts/wait-for-public-subnets.sh ${data.aws_vpc.vpc.id} ${data.aws_region.current.name}"
+    command = "${path.module}/scripts/wait-for-subnets.sh -v ${data.aws_vpc.vpc.id} -r ${data.aws_region.current.name} -t ${var.use_private_ips_only ? "private" : "public"}"
   }
 }
 

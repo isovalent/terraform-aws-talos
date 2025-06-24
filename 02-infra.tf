@@ -1,21 +1,22 @@
-module "cluster_sg" {
+# Public-facing security group for the external load balancer
+module "elb_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.3"
 
-  name        = var.cluster_name
-  description = "Allow all intra-cluster and egress traffic"
+  name        = "${var.cluster_name}-elb"
+  description = "Public-facing LB for Kubernetes and Talos API"
   vpc_id      = var.vpc_id
   tags        = var.tags
 
-  ingress_with_self = [
-    {
-      rule = "all-all"
-    },
-  ]
-
-  ingress_cidr_blocks = length(var.external_source_cidrs) != 0 ? var.external_source_cidrs : [var.talos_api_allowed_cidr]
-
+  # Allow API traffic from the configured external CIDRs
+  ingress_cidr_blocks = var.external_source_cidrs
   ingress_with_cidr_blocks = [
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      description = "Kubernetes API (TLS)"
+    },
     {
       from_port   = 50000
       to_port     = 50000
@@ -24,36 +25,51 @@ module "cluster_sg" {
     },
   ]
 
-  egress_with_cidr_blocks = [
-    {
-      rule        = "all-all"
-      cidr_blocks = "0.0.0.0/0"
-    },
-  ]
+  egress_with_cidr_blocks = [{ rule = "all-all", cidr_blocks = "0.0.0.0/0" }]
 }
 
-module "kubernetes_api_sg" {
-  source  = "terraform-aws-modules/security-group/aws//modules/https-443"
+# Internal security group for Talos control-plane and worker nodes
+module "cluster_sg" {
+  source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.3"
 
-  name                = "${var.cluster_name}-k8s-api"
-  description         = "Allow access to the Kubernetes API"
-  vpc_id              = var.vpc_id
-  tags                = var.tags
-  ingress_cidr_blocks = length(var.external_source_cidrs) != 0 ? var.external_source_cidrs : [var.kubernetes_api_allowed_cidr]
+  name        = var.cluster_name
+  description = "Intra-cluster & traffic from ELB"
+  vpc_id      = var.vpc_id
+  tags        = var.tags
+
+  # Node-to-node communications
+  ingress_with_self = [{ rule = "all-all" }]
+
+  # Allow API traffic coming *from* the ELB
+  ingress_with_source_security_group_id = [
+    {
+      from_port                = 6443
+      to_port                  = 6443
+      protocol                 = "tcp"
+      description              = "Kubernetes API from ELB"
+      source_security_group_id = module.elb_sg.security_group_id
+    },
+    {
+      from_port                = 50000
+      to_port                  = 50000
+      protocol                 = "tcp"
+      description              = "Talos API from ELB"
+      source_security_group_id = module.elb_sg.security_group_id
+    },
+  ]
+
+  egress_with_cidr_blocks = [{ rule = "all-all", cidr_blocks = "0.0.0.0/0" }]
 }
 
 module "elb_k8s_elb" {
   source  = "terraform-aws-modules/elb/aws"
   version = "~> 4.0"
 
-  name    = "${var.cluster_name}-k8s-api"
-  subnets = data.aws_subnets.public.ids
-  tags    = merge(var.tags, local.cluster_required_tags)
-  security_groups = [
-    module.cluster_sg.security_group_id,
-    module.kubernetes_api_sg.security_group_id,
-  ]
+  name            = "${var.cluster_name}-k8s-api"
+  subnets         = data.aws_subnets.public.ids
+  tags            = merge(var.tags, local.cluster_required_tags)
+  security_groups = [module.elb_sg.security_group_id]
 
   listener = [
     {
@@ -71,7 +87,7 @@ module "elb_k8s_elb" {
   ]
 
   health_check = {
-    target              = "tcp:6443"
+    target              = "tcp:50000"
     interval            = 30
     healthy_threshold   = 2
     unhealthy_threshold = 2
