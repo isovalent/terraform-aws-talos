@@ -28,4 +28,5 @@ module "talos" {
   enable_external_cloud_provider              = var.enable_external_cloud_provider
   deploy_external_cloud_provider_iam_policies = var.deploy_external_cloud_provider_iam_policies
   external_cloud_provider_manifest            = var.external_cloud_provider_manifest
+  use_private_ips_only                        = true
 }

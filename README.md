@@ -8,7 +8,8 @@ A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is
 ## Supported Features
 
 - Install Talos Linux OS EC2 VMs
-  - For now, it's only supported to deploy the VMs in public subnets with public IPs assigned
+  - Public and private IPs are supported
+  - AMD64 and ARM64 are supported
 - Support for single- and multi-node cluster architectures
 - Bootstrap Talos Kubernetes cluster with some infrastructure components:
   - [Talos' KubePrism](https://www.talos.dev/v1.5/kubernetes-guides/configuration/kubeprism/) to get an internal endpoint for the KAPI (used for [Cilium Kube-Proxy replacement](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/))
@@ -35,9 +36,8 @@ module "talos" {
   vpc_id                = module.vpc.id
   pod_cidr              = "100.64.0.0/14"
   service_cidr          = "100.68.0.0/16"
-  # Configure the allowed source CIDR ranges globally via var.external_source_cidrs.
-  # Alternatively, via var.talos_api_allowed_cidr or var.kubernetes_api_allowed_cidr.
-  external_source_cidrs = "A.B.C.D/E"
+  # Configure the allowed source CIDR range:
+  external_source_cidrs = ["A.B.C.D/E"]
 }
 ```
 
@@ -68,7 +68,7 @@ module "talos" {
 |------|--------|---------|
 | <a name="module_cluster_sg"></a> [cluster\_sg](#module\_cluster\_sg) | terraform-aws-modules/security-group/aws | ~> 5.3 |
 | <a name="module_elb_k8s_elb"></a> [elb\_k8s\_elb](#module\_elb\_k8s\_elb) | terraform-aws-modules/elb/aws | ~> 4.0 |
-| <a name="module_kubernetes_api_sg"></a> [kubernetes\_api\_sg](#module\_kubernetes\_api\_sg) | terraform-aws-modules/security-group/aws//modules/https-443 | ~> 5.3 |
+| <a name="module_elb_sg"></a> [elb\_sg](#module\_elb\_sg) | terraform-aws-modules/security-group/aws | ~> 5.3 |
 | <a name="module_talos_control_plane_nodes"></a> [talos\_control\_plane\_nodes](#module\_talos\_control\_plane\_nodes) | terraform-aws-modules/ec2-instance/aws | ~> 5.8 |
 | <a name="module_talos_worker_group"></a> [talos\_worker\_group](#module\_talos\_worker\_group) | terraform-aws-modules/ec2-instance/aws | ~> 5.8 |
 
@@ -80,7 +80,7 @@ module "talos" {
 | [aws_iam_policy.worker_ccm_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [local_file.kubeconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [local_file.talosconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [null_resource.wait_for_public_subnets](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
+| [null_resource.wait_for_subnets](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [random_string.workspace_id](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [talos_cluster_kubeconfig.this](https://registry.terraform.io/providers/siderolabs/talos/0.9.0-alpha.0/docs/resources/cluster_kubeconfig) | resource |
 | [talos_machine_bootstrap.this](https://registry.terraform.io/providers/siderolabs/talos/0.9.0-alpha.0/docs/resources/machine_bootstrap) | resource |
@@ -89,6 +89,7 @@ module "talos" {
 | [talos_machine_secrets.this](https://registry.terraform.io/providers/siderolabs/talos/0.9.0-alpha.0/docs/resources/machine_secrets) | resource |
 | [aws_ami.talos](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
+| [aws_subnets.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
 | [aws_subnets.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
 | [talos_client_configuration.this](https://registry.terraform.io/providers/siderolabs/talos/0.9.0-alpha.0/docs/data-sources/client_configuration) | data source |
@@ -113,18 +114,17 @@ module "talos" {
 | <a name="input_disable_kube_proxy"></a> [disable\_kube\_proxy](#input\_disable\_kube\_proxy) | Whether to deploy Kube-Proxy or not. By default, KP shouldn't be deployed. | `bool` | `true` | no |
 | <a name="input_enable_external_cloud_provider"></a> [enable\_external\_cloud\_provider](#input\_enable\_external\_cloud\_provider) | Whether to enable or disable externalCloudProvider support. See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/. | `bool` | `false` | no |
 | <a name="input_external_cloud_provider_manifest"></a> [external\_cloud\_provider\_manifest](#input\_external\_cloud\_provider\_manifest) | externalCloudProvider manifest to be applied if var.enable\_external\_cloud\_provider is enabled. If you want to deploy it manually (e.g., via Helm chart), enable var.enable\_external\_cloud\_provider but set this value to an empty string (""). See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/. | `string` | `"https://raw.githubusercontent.com/isovalent/terraform-aws-talos/main/manifests/aws-cloud-controller.yaml"` | no |
-| <a name="input_external_source_cidrs"></a> [external\_source\_cidrs](#input\_external\_source\_cidrs) | Specify the external source CIDRs (use /32 for specific IP addresses) allowed for inbound traffic. It can be used to override var.talos\_api\_allowed\_cidr and var.kubernetes\_api\_allowed\_cidr at the same time. | `list(string)` | `[]` | no |
+| <a name="input_external_source_cidrs"></a> [external\_source\_cidrs](#input\_external\_source\_cidrs) | Specify the external source CIDRs (use /32 for specific IP addresses) allowed for inbound traffic. | `list(string)` | n/a | yes |
 | <a name="input_iam_instance_profile_control_plane"></a> [iam\_instance\_profile\_control\_plane](#input\_iam\_instance\_profile\_control\_plane) | IAM instance profile to attach to the control plane instances to give AWS CCM the sufficient rights to execute. | `string` | `null` | no |
 | <a name="input_iam_instance_profile_worker"></a> [iam\_instance\_profile\_worker](#input\_iam\_instance\_profile\_worker) | IAM instance profile to attach to the worker instances to give AWS CCM the sufficient rights to execute. | `string` | `null` | no |
-| <a name="input_kubernetes_api_allowed_cidr"></a> [kubernetes\_api\_allowed\_cidr](#input\_kubernetes\_api\_allowed\_cidr) | The CIDR from which to allow to access the Kubernetes API | `string` | `""` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/. For example '1.29.3'. | `string` | `""` | no |
 | <a name="input_metadata_options"></a> [metadata\_options](#input\_metadata\_options) | Metadata to attach to the instances. | `map(string)` | <pre>{<br/>  "http_endpoint": "enabled",<br/>  "http_put_response_hop_limit": 1,<br/>  "http_tokens": "optional"<br/>}</pre> | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The CIDR to use for Pods. Only required in case allocate\_node\_cidrs is set to 'true'. Otherwise, simply configure it inside Cilium's Helm values. | `string` | `"100.64.0.0/14"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the Talos Linux cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the cluster. | `map(string)` | n/a | yes |
-| <a name="input_talos_api_allowed_cidr"></a> [talos\_api\_allowed\_cidr](#input\_talos\_api\_allowed\_cidr) | The CIDR from which to allow to access the Talos API | `string` | `""` | no |
 | <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.10.4"` | no |
+| <a name="input_use_private_ips_only"></a> [use\_private\_ips\_only](#input\_use\_private\_ips\_only) | When true (default), Talos cluster nodes will NOT receive public IPv4 addresses. The Kubernetes/Talos API is still exposed via a public ELB (restricted by security groups via var.external\_source\_cidrs). When set to false, public IPv4 addresses are allocated and the ELB is internet-facing. | `bool` | `true` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC where to place the VMs. | `string` | n/a | yes |
 | <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br/>    name               = string<br/>    instance_type      = optional(string, "m5.large")<br/>    config_patch_files = optional(list(string), [])<br/>    tags               = optional(map(string), {})<br/>  }))</pre> | <pre>[<br/>  {<br/>    "name": "default"<br/>  }<br/>]</pre> | no |
