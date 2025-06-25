@@ -216,7 +216,15 @@ resource "talos_machine_configuration_apply" "controlplane" {
   node                        = var.use_private_ips_only ? module.talos_control_plane_nodes[each.key].private_ip : module.talos_control_plane_nodes[each.key].public_ip
 }
 
+# Wait until Talos APID has rotated its cert & ELB sees the node healthy
+resource "time_sleep" "wait_api_ready" {
+  depends_on      = [talos_machine_bootstrap.this]
+  create_duration = "30s"
+}
+
 resource "talos_machine_configuration_apply" "worker_group" {
+  depends_on = [time_sleep.wait_api_ready]
+
   for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   client_configuration        = talos_machine_secrets.this.client_configuration

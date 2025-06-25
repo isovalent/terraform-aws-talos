@@ -88,10 +88,10 @@ module "elb_k8s_elb" {
 
   health_check = {
     target              = "tcp:50000"
-    interval            = 30
-    healthy_threshold   = 2
+    interval            = 5
+    healthy_threshold   = 3
     unhealthy_threshold = 2
-    timeout             = 5
+    timeout             = 2
   }
 
   number_of_instances = var.controlplane_count
