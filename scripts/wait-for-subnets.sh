@@ -46,13 +46,13 @@ fi
 AWS_DEFAULT_OUTPUT=json
 export AWS_DEFAULT_OUTPUT
 
-echo "Waiting for at least two '${SUBNET_TYPE}' subnets in VPC ${VPC_ID} (region ${REGION}) …"
+echo "Waiting for three '${SUBNET_TYPE}' subnets in VPC ${VPC_ID} (region ${REGION}) …"
 
 while (( $(aws ec2 describe-subnets \
             --filters Name=vpc-id,Values="${VPC_ID}" \
             --filters Name=tag:type,Values="${SUBNET_TYPE}" \
             --region "${REGION}" \
-            | jq -e '.Subnets[].AvailabilityZone' | wc -l | xargs) < 2 ));
+            | jq -e '.Subnets[].AvailabilityZone' | wc -l | xargs) < 3 ));
 do
   sleep 1
 done

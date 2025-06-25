@@ -192,9 +192,3 @@ variable "external_cloud_provider_manifest" {
   description = "externalCloudProvider manifest to be applied if var.enable_external_cloud_provider is enabled. If you want to deploy it manually (e.g., via Helm chart), enable var.enable_external_cloud_provider but set this value to an empty string (\"\"). See https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/."
   type        = string
 }
-
-variable "use_private_ips_only" {
-  description = "When true (default), Talos cluster nodes will NOT receive public IPv4 addresses. The Kubernetes/Talos API is still exposed via a public ELB (restricted by security groups via var.external_source_cidrs). When set to false, public IPv4 addresses are allocated and the ELB is internet-facing."
-  type        = bool
-  default     = true
-}

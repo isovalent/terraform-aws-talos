@@ -35,7 +35,7 @@ locals {
       },
       apiServer = {
         certSANs = [
-          module.elb_k8s_elb.elb_dns_name
+          aws_lb.api.dns_name
         ],
         extraArgs = {
           enable-admission-plugins = var.admission_plugins
@@ -65,7 +65,7 @@ locals {
     },
     machine = {
       certSANs = [
-        module.elb_k8s_elb.elb_dns_name
+        aws_lb.api.dns_name
       ],
       kubelet = {
         extraArgs = {

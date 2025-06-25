@@ -121,8 +121,8 @@ module "talos_control_plane_nodes" {
   name                        = "${var.cluster_name}-control-plane-${count.index}"
   ami                         = data.aws_ami.talos.id
   instance_type               = var.control_plane.instance_type
-  subnet_id                   = var.use_private_ips_only ? element(data.aws_subnets.private.ids, count.index) : element(data.aws_subnets.public.ids, count.index)
-  associate_public_ip_address = !var.use_private_ips_only
+  subnet_id                   = element(data.aws_subnets.public.ids, count.index)
+  associate_public_ip_address = true
   tags                        = merge(var.tags, local.cluster_required_tags)
   metadata_options            = var.metadata_options
   ignore_ami_changes          = true
@@ -151,8 +151,8 @@ module "talos_worker_group" {
   name                        = "${var.cluster_name}-worker-group-${each.value.name}-${trimprefix(each.key, "${each.value.name}.")}"
   ami                         = data.aws_ami.talos.id
   instance_type               = each.value.instance_type
-  subnet_id                   = var.use_private_ips_only ? element(data.aws_subnets.private.ids, tonumber(trimprefix(each.key, "${each.value.name}."))) : element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
-  associate_public_ip_address = !var.use_private_ips_only
+  subnet_id                   = element(data.aws_subnets.public.ids, tonumber(trimprefix(each.key, "${each.value.name}.")))
+  associate_public_ip_address = true
   tags                        = merge(each.value.tags, var.tags, local.cluster_required_tags)
   metadata_options            = var.metadata_options
   ignore_ami_changes          = true
@@ -178,7 +178,7 @@ resource "talos_machine_secrets" "this" {
 
 data "talos_machine_configuration" "controlplane" {
   cluster_name       = var.cluster_name
-  cluster_endpoint   = "https://${module.elb_k8s_elb.elb_dns_name}"
+  cluster_endpoint   = "https://${aws_lb.api.dns_name}"
   machine_type       = "controlplane"
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.kubernetes_version
@@ -191,11 +191,27 @@ data "talos_machine_configuration" "controlplane" {
   )
 }
 
+resource "talos_machine_configuration_apply" "controlplane" {
+  for_each                    = { for index, instance in module.talos_control_plane_nodes : index => instance }
+  client_configuration        = talos_machine_secrets.this.client_configuration
+  machine_configuration_input = data.talos_machine_configuration.controlplane.machine_configuration
+  endpoint                    = module.talos_control_plane_nodes[each.key].public_ip
+  node                        = module.talos_control_plane_nodes[each.key].private_ip
+}
+
+resource "talos_machine_bootstrap" "this" {
+  depends_on = [talos_machine_configuration_apply.controlplane]
+
+  client_configuration = talos_machine_secrets.this.client_configuration
+  endpoint             = module.talos_control_plane_nodes.0.public_ip
+  node                 = module.talos_control_plane_nodes.0.private_ip
+}
+
 data "talos_machine_configuration" "worker_group" {
   for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   cluster_name       = var.cluster_name
-  cluster_endpoint   = "https://${module.elb_k8s_elb.elb_dns_name}"
+  cluster_endpoint   = "https://${aws_lb.api.dns_name}"
   machine_type       = "worker"
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.kubernetes_version
@@ -208,44 +224,20 @@ data "talos_machine_configuration" "worker_group" {
   )
 }
 
-resource "talos_machine_configuration_apply" "controlplane" {
-  for_each                    = { for index, instance in module.talos_control_plane_nodes : index => instance }
-  client_configuration        = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.controlplane.machine_configuration
-  endpoint                    = module.elb_k8s_elb.elb_dns_name
-  node                        = var.use_private_ips_only ? module.talos_control_plane_nodes[each.key].private_ip : module.talos_control_plane_nodes[each.key].public_ip
-}
-
-# Wait until Talos APID has rotated its cert & ELB sees the node healthy
-resource "time_sleep" "wait_api_ready" {
-  depends_on      = [talos_machine_bootstrap.this]
-  create_duration = "30s"
-}
-
 resource "talos_machine_configuration_apply" "worker_group" {
-  depends_on = [time_sleep.wait_api_ready]
-
   for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
   client_configuration        = talos_machine_secrets.this.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_group[each.key].machine_configuration
-  endpoint                    = module.elb_k8s_elb.elb_dns_name
-  node                        = var.use_private_ips_only ? module.talos_worker_group[each.key].private_ip : module.talos_worker_group[each.key].public_ip
-}
-
-resource "talos_machine_bootstrap" "this" {
-  depends_on = [talos_machine_configuration_apply.controlplane]
-
-  client_configuration = talos_machine_secrets.this.client_configuration
-  endpoint             = module.elb_k8s_elb.elb_dns_name
-  node                 = var.use_private_ips_only ? module.talos_control_plane_nodes.0.private_ip : module.talos_control_plane_nodes.0.public_ip
+  endpoint                    = module.talos_worker_group[each.key].public_ip
+  node                        = module.talos_worker_group[each.key].private_ip
 }
 
 data "talos_client_configuration" "this" {
   cluster_name         = var.cluster_name
   client_configuration = talos_machine_secrets.this.client_configuration
-  endpoints            = [module.elb_k8s_elb.elb_dns_name]
-  nodes                = var.use_private_ips_only ? module.talos_control_plane_nodes.*.private_ip : module.talos_control_plane_nodes.*.public_ip
+  endpoints            = [aws_lb.api.dns_name]
+  nodes                = flatten([module.talos_control_plane_nodes.*.private_ip, flatten([for node in module.talos_worker_group : node.private_ip])])
 }
 
 resource "local_file" "talosconfig" {
@@ -257,8 +249,8 @@ resource "talos_cluster_kubeconfig" "this" {
   depends_on = [talos_machine_bootstrap.this]
 
   client_configuration = talos_machine_secrets.this.client_configuration
-  endpoint             = module.elb_k8s_elb.elb_dns_name
-  node                 = var.use_private_ips_only ? module.talos_control_plane_nodes.0.private_ip : module.talos_control_plane_nodes.0.public_ip
+  endpoint             = module.talos_control_plane_nodes.0.public_ip
+  node                 = module.talos_control_plane_nodes.0.private_ip
 }
 
 resource "local_file" "kubeconfig" {
