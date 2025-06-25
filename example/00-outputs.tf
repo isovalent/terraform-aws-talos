@@ -13,9 +13,9 @@ output "path_to_talosconfig_file" {
   value       = module.talos.path_to_talosconfig_file
 }
 
-output "elb_dns_name" {
-  description = "Public ELB DNS name."
-  value       = module.talos.elb_dns_name
+output "lb_dns_name" {
+  description = "Public NLB DNS name."
+  value       = module.talos.lb_dns_name
 }
 
 output "region" {

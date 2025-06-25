@@ -15,9 +15,8 @@ module "talos" {
   external_source_cidrs = ["${data.external.public_ip.result.ip}/32"]
 
   // VPC needs to be created in advance via https://github.com/isovalent/terraform-aws-vpc
-  vpc_id               = module.vpc.id
-  pod_cidr             = var.pod_cidr
-  service_cidr         = var.service_cidr
-  disable_kube_proxy   = var.disable_kube_proxy
-  use_private_ips_only = true
+  vpc_id             = module.vpc.id
+  pod_cidr           = var.pod_cidr
+  service_cidr       = var.service_cidr
+  disable_kube_proxy = var.disable_kube_proxy
 }

@@ -8,7 +8,7 @@ A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is
 ## Supported Features
 
 - Install Talos Linux OS EC2 VMs
-  - Public and private IPs are supported
+  - Due to Talos' setup requirements, it's only supported to deploy the EC2 instances in public subnets with public IPs assigned (access can be restricted via security groups)
   - AMD64 and ARM64 are supported
 - Support for single- and multi-node cluster architectures
 - Bootstrap Talos Kubernetes cluster with some infrastructure components:
@@ -61,15 +61,13 @@ module "talos" {
 | <a name="provider_null"></a> [null](#provider\_null) | n/a |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.7 |
 | <a name="provider_talos"></a> [talos](#provider\_talos) | 0.9.0-alpha.0 |
-| <a name="provider_time"></a> [time](#provider\_time) | n/a |
 
 ### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_cluster_sg"></a> [cluster\_sg](#module\_cluster\_sg) | terraform-aws-modules/security-group/aws | ~> 5.3 |
-| <a name="module_elb_k8s_elb"></a> [elb\_k8s\_elb](#module\_elb\_k8s\_elb) | terraform-aws-modules/elb/aws | ~> 4.0 |
-| <a name="module_elb_sg"></a> [elb\_sg](#module\_elb\_sg) | terraform-aws-modules/security-group/aws | ~> 5.3 |
+| <a name="module_nlb_sg"></a> [nlb\_sg](#module\_nlb\_sg) | terraform-aws-modules/security-group/aws | ~> 5.3 |
 | <a name="module_talos_control_plane_nodes"></a> [talos\_control\_plane\_nodes](#module\_talos\_control\_plane\_nodes) | terraform-aws-modules/ec2-instance/aws | ~> 5.8 |
 | <a name="module_talos_worker_group"></a> [talos\_worker\_group](#module\_talos\_worker\_group) | terraform-aws-modules/ec2-instance/aws | ~> 5.8 |
 
@@ -79,6 +77,13 @@ module "talos" {
 |------|------|
 | [aws_iam_policy.control_plane_ccm_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.worker_ccm_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_lb.api](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb) | resource |
+| [aws_lb_listener.https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener) | resource |
+| [aws_lb_listener.talos](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener) | resource |
+| [aws_lb_target_group.k8s](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group) | resource |
+| [aws_lb_target_group.talos](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group) | resource |
+| [aws_lb_target_group_attachment.cp_k8s](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment) | resource |
+| [aws_lb_target_group_attachment.cp_talos](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment) | resource |
 | [local_file.kubeconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [local_file.talosconfig](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [null_resource.wait_for_subnets](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -88,7 +93,6 @@ module "talos" {
 | [talos_machine_configuration_apply.controlplane](https://registry.terraform.io/providers/siderolabs/talos/0.9.0-alpha.0/docs/resources/machine_configuration_apply) | resource |
 | [talos_machine_configuration_apply.worker_group](https://registry.terraform.io/providers/siderolabs/talos/0.9.0-alpha.0/docs/resources/machine_configuration_apply) | resource |
 | [talos_machine_secrets.this](https://registry.terraform.io/providers/siderolabs/talos/0.9.0-alpha.0/docs/resources/machine_secrets) | resource |
-| [time_sleep.wait_api_ready](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [aws_ami.talos](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnets.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
@@ -126,7 +130,6 @@ module "talos" {
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the cluster. | `map(string)` | n/a | yes |
 | <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.10.4"` | no |
-| <a name="input_use_private_ips_only"></a> [use\_private\_ips\_only](#input\_use\_private\_ips\_only) | When true (default), Talos cluster nodes will NOT receive public IPv4 addresses. The Kubernetes/Talos API is still exposed via a public ELB (restricted by security groups via var.external\_source\_cidrs). When set to false, public IPv4 addresses are allocated and the ELB is internet-facing. | `bool` | `true` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC where to place the VMs. | `string` | n/a | yes |
 | <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br/>    name               = string<br/>    instance_type      = optional(string, "m5.large")<br/>    config_patch_files = optional(list(string), [])<br/>    tags               = optional(map(string), {})<br/>  }))</pre> | <pre>[<br/>  {<br/>    "name": "default"<br/>  }<br/>]</pre> | no |
@@ -137,8 +140,11 @@ module "talos" {
 | Name | Description |
 |------|-------------|
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | Name of cluster |
-| <a name="output_elb_dns_name"></a> [elb\_dns\_name](#output\_elb\_dns\_name) | Public ELB DNS name. |
+| <a name="output_elb_dns_name"></a> [elb\_dns\_name](#output\_elb\_dns\_name) | [DEPRECATED: Use lb\_dns\_name instead] Public load balancer DNS name. |
 | <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | Kubeconfig content |
+| <a name="output_lb_arn"></a> [lb\_arn](#output\_lb\_arn) | The ARN of the Network Load Balancer. |
+| <a name="output_lb_dns_name"></a> [lb\_dns\_name](#output\_lb\_dns\_name) | Public NLB DNS name. |
+| <a name="output_lb_zone_id"></a> [lb\_zone\_id](#output\_lb\_zone\_id) | The zone\_id of the NLB for Route53 alias records. |
 | <a name="output_path_to_kubeconfig_file"></a> [path\_to\_kubeconfig\_file](#output\_path\_to\_kubeconfig\_file) | The generated kubeconfig. |
 | <a name="output_path_to_talosconfig_file"></a> [path\_to\_talosconfig\_file](#output\_path\_to\_talosconfig\_file) | The generated talosconfig. |
 <!-- END_TF_DOCS -->

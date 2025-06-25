@@ -59,7 +59,7 @@ worker_groups = [{
 
 ## Using the CuTE
 
-Once Terraform has completed creating the CuTE it will create a KubeConfig file you can use to access the CuTE. Use the following commmand to access the CuTE:
+Once Terraform has completed creating the CuTE it will create a KubeConfig file you can use to access the CuTE. Use the following commands to access the CuTE:
 
 ```bash
 # Working the the K8s cluster:
@@ -67,9 +67,9 @@ KUBECONFIG=$(terraform output --raw path_to_kubeconfig_file)
 kubectl get nodes
 # Working with talosctl
 TALOSCONFIG=$(terraform output --raw path_to_talosconfig_file)
-talosctl config node $(terraform output --raw elb_dns_name)
+talosctl info
 talosctl version
-talosctl health
+talosctl health -n <specific-node-ip>
 talosctl service
 talosctl get members
 # Optionally, print the Talos machineconfig:
@@ -166,7 +166,7 @@ aws-delete-vpc -cluster-name <Name of your cluster>
 |------|-------------|
 | <a name="output_cilium_namespace"></a> [cilium\_namespace](#output\_cilium\_namespace) | n/a |
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | Cluster name |
-| <a name="output_elb_dns_name"></a> [elb\_dns\_name](#output\_elb\_dns\_name) | Public ELB DNS name. |
+| <a name="output_lb_dns_name"></a> [lb\_dns\_name](#output\_lb\_dns\_name) | Public NLB DNS name. |
 | <a name="output_path_to_kubeconfig_file"></a> [path\_to\_kubeconfig\_file](#output\_path\_to\_kubeconfig\_file) | Path to the kubeconfig of the Talos Linux cluster |
 | <a name="output_path_to_talosconfig_file"></a> [path\_to\_talosconfig\_file](#output\_path\_to\_talosconfig\_file) | Path to the talosconfig of the Talos Linux cluster |
 | <a name="output_region"></a> [region](#output\_region) | AWS region used for the infra |

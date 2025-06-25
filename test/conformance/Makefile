@@ -23,8 +23,8 @@ destroy: AUTO_APPROVE ?= true
 destroy:
 	# Attempt to destroy talos module created infra first, following this wait 10 minutes for all load balancers
 	# to disappear before doing a final complete destroy.
-	# This is to prevent issues where the ELB is still around when VPC delete happens (outside of talos root module
-	# preventing destroy due to attach ELB instance network interfaces).
+	# This is to prevent issues where the NLB is still around when VPC delete happens (outside of talos root module
+	# preventing destroy due to attach NLB instance network interfaces).
 	$(call destroy_talos)
 	./wait-for-eni.sh $(VPC_ID)
 	$(call destroy_talos)

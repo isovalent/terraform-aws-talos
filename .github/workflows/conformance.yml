@@ -153,7 +153,7 @@ jobs:
       - name: Install Cilium
         run: |
           cd test/conformance
-          timeout 120 bash -c "until curl -sS https://$(terraform output -raw elb_dns_name):443 -k -m 3; do sleep 1 && echo 'waiting for apiserver'; done"
+          timeout 120 bash -c "until curl -sS https://$(terraform output -raw lb_dns_name):443 -k -m 3; do sleep 1 && echo 'waiting for apiserver'; done"
           if [ $? -ne 0 ]; then
             echo "API Server LB failed to become available."
             exit 1
