@@ -1,3 +1,8 @@
+# Used for ingress SG restrictions
+data "external" "public_ip" {
+  program = ["sh", "-c", "curl -s https://api.ipify.org?format=json"]
+}
+
 module "talos" {
   #source = "git::https://github.com/isovalent/terraform-aws-talos?ref=<RELEASE_TAG>"
   source = "../"
