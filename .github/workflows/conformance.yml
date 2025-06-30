@@ -19,7 +19,7 @@ jobs:
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.17.4'
+          - '1.17.5'
           # renovate: datasource=github-releases depName=cilium/cilium
           - '1.16.11'
           # renovate: datasource=github-releases depName=cilium/cilium
