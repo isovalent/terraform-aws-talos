@@ -9,20 +9,14 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
           - '1.17.5'
-          # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.16.11'
-          # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.15.18'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.10.4'
-          # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.9.6'
         config:
           - name: 'Cilium Reference Configuration for Talos Linux'
             kube-proxy: false
