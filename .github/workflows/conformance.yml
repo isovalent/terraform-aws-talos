@@ -15,7 +15,7 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 4
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
@@ -30,7 +30,7 @@ jobs:
           # renovate: datasource=github-releases depName=siderolabs/talos
           - 'v1.9.6'
         config:
-          - name: 'Vanilla'
+          - name: 'Cilium Reference Configuration for Talos Linux'
             kube-proxy: false
             kube-proxy-replacement: "true"
             socketlb: false
@@ -40,13 +40,13 @@ jobs:
             ipv4: true
             ipv6: false
             encryption-enabled: false
-            encryption-type: ipsec
+            encryption-type: ""
             tunnel-mode: vxlan
-            nodeport: true
-            ingress-controller: true
+            nodeport: false
+            ingress-controller: false
 
-          - name: 'Wireguard'
-            kube-proxy: true
+          - name: 'Wireguard enabled'
+            kube-proxy: false
             kube-proxy-replacement: "true"
             socketlb: false
             bpf-masquerade: true
@@ -60,62 +60,33 @@ jobs:
             nodeport: true
             ingress-controller: true
 
-          - name: 'IPSEC'
-            kube-proxy: true
-            kube-proxy-replacement: "false"
-            socketlb: true
+          - name: 'IPsec enabled'
+            kube-proxy: false
+            kube-proxy-replacement: "true"
+            socketlb: false
             bpf-masquerade: false
-            bpf-hostlegacyrouting: true
+            bpf-hostlegacyrouting: false
             ipam-mode: 'kubernetes'
             ipv4: true
             ipv6: false
             encryption-enabled: true
             encryption-type: ipsec
             tunnel-mode: vxlan
-            nodeport: false
-            ingress-controller: false
-
-          - name: 'No KPR and w/ BPF Masq'
-            kube-proxy: true
-            kube-proxy-replacement: "false"
-            socketlb: true
-            bpf-masquerade: true
-            bpf-hostlegacyrouting: true
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: false
-            tunnel-mode: vxlan
             nodeport: true
             ingress-controller: true
 
-          - name: 'Clusterpool IPAM Mode'
-            kube-proxy: false
-            kube-proxy-replacement: "true"
+          - name: 'No KPR, Ingress and Clusterpool IPAM'
+            kube-proxy: true
+            kube-proxy-replacement: "false"
             socketlb: false
-            bpf-masquerade: true
+            bpf-masquerade: false
             bpf-hostlegacyrouting: true
             ipam-mode: 'cluster-pool'
             ipv4: true
             ipv6: false
             encryption-enabled: false
-            encryption-type: ipsec
+            encryption-type: ""
             tunnel-mode: vxlan
-            nodeport: true
-            ingress-controller: true
-
-          - name: 'With Geneve Tunnel'
-            kube-proxy: false
-            kube-proxy-replacement: "true"
-            socketlb: false
-            bpf-masquerade: true
-            bpf-hostlegacyrouting: true
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: false
-            encryption-type: ipsec
-            tunnel-mode: geneve
             nodeport: true
             ingress-controller: true
 
@@ -143,10 +114,10 @@ jobs:
             --owner "isovalent/terraform-aws-talos"
           make apply
       - name: Install Cilium CLI
-        uses: cilium/cilium-cli@a4936ec2afa58bf755162928456190344a179207 # v0.16.24
+        # renovate: datasource=github-releases depName=cilium/cilium-cli
+        uses: cilium/cilium-cli@v0.18.5
         with:
           repository: cilium/cilium-cli
-          release-version: v0.15.20
           ci-version: ""
           binary-name: cilium-cli
           binary-dir: /usr/local/bin
@@ -180,7 +151,8 @@ jobs:
             --set nodePort.enabled=${{ matrix.config.nodeport }}
           cilium-cli status --wait
 
-      - name: Run E2E Connectivity Tests
+      - id: run-tests
+        name: Run E2E Connectivity Tests
         run: |
           cd test/conformance
           export $(make print-kubeconfig)
@@ -209,19 +181,60 @@ jobs:
           name: cilium-sysdumps-${{ github.run_id }}-${{ github.run_number }}
           path: ./test/conformance/cilium-sysdump-*.zip
 
-      - name: Cleanup
+      - name: Upload Terraform workdir
         if: always()
-        run: |
-          cd test/conformance
-          make destroy
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-state-${{ matrix.talos }}-${{ matrix.cilium }}-${{ matrix.config.name }}
+          retention-days: 1
+          include-hidden-files: true
+          path: |
+            test/conformance/env.tfvars
+            test/conformance/.timestamp
 
-  finalize:
-    runs-on: ubuntu-22.04
+  cleanup:
+    runs-on: ubuntu-24.04
     if: always()
     permissions:
       id-token: write
       contents: read
     needs: setup-and-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials from shared services account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
+          aws-region: us-east-2
+      - uses: hashicorp/setup-terraform@v3
+      - name: Download Terraform workdirs
+        uses: actions/download-artifact@v4
+        with:
+          path: ./tf-states
+      - name: Destroy all clusters
+        shell: bash
+        run: |
+          set -euo pipefail
+          find ./tf-states -type f -name 'env.tfvars' -print0 | while IFS= read -r -d '' envfile; do
+            echo "Processing $envfile"
+            dir=$(dirname "$envfile")
+            cp "$envfile" test/conformance/env.tfvars
+            if [ -f "$dir/.timestamp" ]; then
+              cp "$dir/.timestamp" test/conformance/.timestamp
+            else
+              date +%s > test/conformance/.timestamp
+            fi
+            (cd test/conformance && terraform init -upgrade && terraform destroy -auto-approve -input=false -var-file=env.tfvars || true)
+          done
+
+  finalize:
+    runs-on: ubuntu-24.04
+    if: always()
+    permissions:
+      id-token: write
+      contents: read
+    needs: [setup-and-test, cleanup]
     steps:
       - name: Send notification
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
