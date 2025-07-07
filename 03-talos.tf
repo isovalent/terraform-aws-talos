@@ -114,7 +114,7 @@ resource "aws_iam_policy" "worker_ccm_policy" {
 
 module "talos_control_plane_nodes" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 5.8"
+  version = "~> 6.0"
 
   count = var.controlplane_count
 
@@ -144,7 +144,7 @@ module "talos_control_plane_nodes" {
 
 module "talos_worker_group" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 5.8"
+  version = "~> 6.0"
 
   for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
