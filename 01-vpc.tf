@@ -46,6 +46,6 @@ data "aws_subnets" "private" {
 // Used to wait for at least one of the subnets to exist.
 resource "null_resource" "wait_for_subnets" {
   provisioner "local-exec" {
-    command = "${path.module}/scripts/wait-for-subnets.sh -v ${data.aws_vpc.vpc.id} -r ${data.aws_region.current.name} -t public"
+    command = "${path.module}/scripts/wait-for-subnets.sh -v ${data.aws_vpc.vpc.id} -r ${data.aws_region.current.region} -t public"
   }
 }
