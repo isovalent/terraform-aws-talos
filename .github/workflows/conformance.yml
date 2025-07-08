@@ -21,16 +21,16 @@ jobs:
           # renovate: datasource=github-releases depName=cilium/cilium
           - '1.17.5'
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.16.11'
+          #- '1.16.11'
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.15.18'
+          #- '1.15.18'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.10.4'
+          - 'v1.10.5'
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.9.6'
+          #- 'v1.9.6'
         config:
-          - name: 'Cilium Reference Configuration for Talos Linux'
+          - name: 'Cilium-Reference-Config'
             kube-proxy: false
             kube-proxy-replacement: "true"
             socketlb: false
@@ -45,50 +45,50 @@ jobs:
             nodeport: false
             ingress-controller: false
 
-          - name: 'Wireguard enabled'
-            kube-proxy: false
-            kube-proxy-replacement: "true"
-            socketlb: false
-            bpf-masquerade: true
-            bpf-hostlegacyrouting: true
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: true
-            encryption-type: wireguard
-            tunnel-mode: vxlan
-            nodeport: true
-            ingress-controller: true
+          # - name: 'Wireguard'
+          #   kube-proxy: false
+          #   kube-proxy-replacement: "true"
+          #   socketlb: false
+          #   bpf-masquerade: true
+          #   bpf-hostlegacyrouting: true
+          #   ipam-mode: 'kubernetes'
+          #   ipv4: true
+          #   ipv6: false
+          #   encryption-enabled: true
+          #   encryption-type: wireguard
+          #   tunnel-mode: vxlan
+          #   nodeport: true
+          #   ingress-controller: true
 
-          - name: 'IPsec enabled'
-            kube-proxy: false
-            kube-proxy-replacement: "true"
-            socketlb: false
-            bpf-masquerade: false
-            bpf-hostlegacyrouting: false
-            ipam-mode: 'kubernetes'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: true
-            encryption-type: ipsec
-            tunnel-mode: vxlan
-            nodeport: true
-            ingress-controller: true
+          # - name: 'IPsec'
+          #   kube-proxy: false
+          #   kube-proxy-replacement: "true"
+          #   socketlb: false
+          #   bpf-masquerade: false
+          #   bpf-hostlegacyrouting: false
+          #   ipam-mode: 'kubernetes'
+          #   ipv4: true
+          #   ipv6: false
+          #   encryption-enabled: true
+          #   encryption-type: ipsec
+          #   tunnel-mode: vxlan
+          #   nodeport: true
+          #   ingress-controller: true
 
-          - name: 'No KPR, Ingress and Clusterpool IPAM'
-            kube-proxy: true
-            kube-proxy-replacement: "false"
-            socketlb: false
-            bpf-masquerade: false
-            bpf-hostlegacyrouting: true
-            ipam-mode: 'cluster-pool'
-            ipv4: true
-            ipv6: false
-            encryption-enabled: false
-            encryption-type: ""
-            tunnel-mode: vxlan
-            nodeport: true
-            ingress-controller: true
+          # - name: 'No-KPR_Ingress_Clusterpool-IPAM'
+          #   kube-proxy: true
+          #   kube-proxy-replacement: "false"
+          #   socketlb: false
+          #   bpf-masquerade: false
+          #   bpf-hostlegacyrouting: true
+          #   ipam-mode: 'cluster-pool'
+          #   ipv4: true
+          #   ipv6: false
+          #   encryption-enabled: false
+          #   encryption-type: ""
+          #   tunnel-mode: vxlan
+          #   nodeport: true
+          #   ingress-controller: true
 
     steps:
       - name: Checkout

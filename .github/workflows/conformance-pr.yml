@@ -16,7 +16,7 @@ jobs:
           - '1.17.5'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.10.4'
+          - 'v1.10.5'
         config:
           - name: 'Cilium Reference Configuration for Talos Linux'
             kube-proxy: false
