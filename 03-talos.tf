@@ -114,7 +114,7 @@ resource "aws_iam_policy" "worker_ccm_policy" {
 
 module "talos_control_plane_nodes" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 5.8"
+  version = "~> 6.0"
 
   count = var.controlplane_count
 
@@ -135,16 +135,14 @@ module "talos_control_plane_nodes" {
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
-  root_block_device = [
-    {
-      volume_size = 50
-    }
-  ]
+  root_block_device = {
+    size = 50
+  }
 }
 
 module "talos_worker_group" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 5.8"
+  version = "~> 6.0"
 
   for_each = merge([for info in var.worker_groups : { for index in range(0, var.workers_count) : "${info.name}.${index}" => info }]...)
 
@@ -165,11 +163,9 @@ module "talos_worker_group" {
 
   vpc_security_group_ids = [module.cluster_sg.security_group_id]
 
-  root_block_device = [
-    {
-      volume_size = 50
-    }
-  ]
+  root_block_device = {
+    size = 50
+  }
 }
 
 resource "talos_machine_secrets" "this" {
