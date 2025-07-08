@@ -181,52 +181,11 @@ jobs:
           name: cilium-sysdumps-${{ github.run_id }}-${{ github.run_number }}
           path: ./test/conformance/cilium-sysdump-*.zip
 
-      - name: Upload Terraform workdir
+      - name: Cleanup
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: tf-state-${{ matrix.talos }}-${{ matrix.cilium }}-${{ matrix.config.name }}
-          retention-days: 1
-          include-hidden-files: true
-          path: |
-            test/conformance/env.tfvars
-            test/conformance/.timestamp
-
-  cleanup:
-    runs-on: ubuntu-24.04
-    if: always()
-    permissions:
-      id-token: write
-      contents: read
-    needs: setup-and-test
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Configure AWS credentials from shared services account
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
-          aws-region: us-east-2
-      - uses: hashicorp/setup-terraform@v3
-      - name: Download Terraform workdirs
-        uses: actions/download-artifact@v4
-        with:
-          path: ./tf-states
-      - name: Destroy all clusters
-        shell: bash
         run: |
-          set -euo pipefail
-          find ./tf-states -type f -name 'env.tfvars' -print0 | while IFS= read -r -d '' envfile; do
-            echo "Processing $envfile"
-            dir=$(dirname "$envfile")
-            cp "$envfile" test/conformance/env.tfvars
-            if [ -f "$dir/.timestamp" ]; then
-              cp "$dir/.timestamp" test/conformance/.timestamp
-            else
-              date +%s > test/conformance/.timestamp
-            fi
-            (cd test/conformance && terraform init -upgrade && terraform destroy -auto-approve -input=false -var-file=env.tfvars || true)
-          done
+          cd test/conformance
+          make destroy
 
   finalize:
     runs-on: ubuntu-24.04
@@ -234,7 +193,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    needs: [setup-and-test, cleanup]
+    needs: setup-and-test
     steps:
       - name: Send notification
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
