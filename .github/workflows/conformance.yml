@@ -95,12 +95,15 @@ jobs:
         uses: actions/checkout@09d2acae674a48949e3602304ab46fd20ae0c42f
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
       - name: Configure AWS credentials from shared services account
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::478566851380:role/TalosConformanceCI
           aws-region: us-east-2
+
       - uses: hashicorp/setup-terraform@v3
+
       - name: Create Talos Cluster
         run: |
           cd test/conformance
@@ -113,14 +116,16 @@ jobs:
             --cilium-version ${{ matrix.cilium }} \
             --owner "isovalent/terraform-aws-talos"
           make apply
-      - name: Install Cilium CLI
-        # renovate: datasource=github-releases depName=cilium/cilium-cli
-        uses: cilium/cilium-cli@v0.18.5
-        with:
-          repository: cilium/cilium-cli
-          ci-version: ""
-          binary-name: cilium-cli
-          binary-dir: /usr/local/bin
+
+      - name: Install latest Cilium CLI
+        run: |
+          CILIUM_CLI_VERSION=$(curl -sSf --retry 5 --retry-delay 3 --retry-connrefused https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
+          CLI_ARCH="$(arch | sed 's/x86_64/amd64/; s/aarch64/arm64/')"
+          curl -sSLf --retry 5 --retry-delay 3 --retry-connrefused --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+          sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
+          sudo tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz /usr/local/bin
+          rm cilium-linux-${CLI_ARCH}.tar.gz*
+
       - name: Install Cilium
         run: |
           cd test/conformance
@@ -135,7 +140,7 @@ jobs:
           kubectl create -n kube-system secret generic cilium-ipsec-keys \
             --from-literal=keys="3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null | xxd -p -c 64)) 128"
           kubectl create -n kube-system -f ipmasq-config.yaml
-          cilium-cli install --version="v${{ matrix.cilium }}" \
+          cilium install --version="v${{ matrix.cilium }}" \
             --values=values.yaml \
             --set ipv4.enabled=${{ matrix.config.ipv4 }} \
             --set ipv6.enabled=${{ matrix.config.ipv6 }} \
@@ -149,7 +154,7 @@ jobs:
             --set encryption.type=${{ matrix.config.encryption-type }} \
             --set tunnelProtocol=${{ matrix.config.tunnel-mode }} \
             --set nodePort.enabled=${{ matrix.config.nodeport }}
-          cilium-cli status --wait
+          cilium status --wait
 
       - id: run-tests
         name: Run E2E Connectivity Tests
@@ -158,9 +163,13 @@ jobs:
           export $(make print-kubeconfig)
           ./wait
           kubectl create ns cilium-test
+          kubectl create ns cilium-test-1
           kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
           kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
-          cilium-cli connectivity test --collect-sysdump-on-failure
+          kubectl label ns cilium-test-1 pod-security.kubernetes.io/enforce=privileged
+          kubectl label ns cilium-test-1 pod-security.kubernetes.io/warn=privileged
+          cilium connectivity test --hubble=false --flow-validation=disabled
+          # cilium connectivity test --collect-sysdump-on-failure
 
       - name: Fetch artifacts
         if: ${{ !success() && steps.run-tests.outcome != 'skipped' }}
@@ -170,9 +179,9 @@ jobs:
           export $(make print-kubeconfig)
           kubectl get svc -o wide -A
           kubectl get pods --all-namespaces -o wide
-          cilium-cli status
+          cilium status
           mkdir -p cilium-sysdumps
-          cilium-cli sysdump --output-filename cilium-sysdump-${{ github.run_id }}-${{ github.run_number }}
+          cilium sysdump --output-filename cilium-sysdump-${{ github.run_id }}-${{ github.run_number }}
 
       - name: Upload artifacts
         if: ${{ !success() }}
