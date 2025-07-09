@@ -102,10 +102,10 @@ variable "kubernetes_version" {
   description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/. For example '1.29.3'."
   type        = string
   validation {
-    condition     = can(regex("^\\d+\\.\\d+\\.\\d+$", var.kubernetes_version))
-    error_message = "The kubernetes_version value must be a valid Kubernetes patch version."
+    # Accept empty value or enforce semantic version pattern if set
+    condition     = var.kubernetes_version == "" || can(regex("^\\d+\\.\\d+\\.\\d+$", var.kubernetes_version))
+    error_message = "The kubernetes_version value must be either empty or a valid Kubernetes patch version (e.g., 1.29.3)."
   }
-
 }
 
 variable "controlplane_count" {
