@@ -21,7 +21,7 @@ jobs:
           - name: 'Cilium-Reference-Config'
             kube-proxy: false
             kube-proxy-replacement: "true"
-            socketlb: false
+            socketlb: true
             bpf-masquerade: true
             bpf-hostlegacyrouting: true
             ipam-mode: 'kubernetes'
@@ -53,6 +53,15 @@ jobs:
           RUNNER_PUBLIC_IP=$(curl -sSf https://api.ipify.org)
           echo "Runner public IP: $RUNNER_PUBLIC_IP"
           echo "RUNNER_PUBLIC_IP=$RUNNER_PUBLIC_IP" >> "$GITHUB_OUTPUT"
+
+      - name: GH Runner Private IP
+        id: private_ip
+        run: |
+          # Get the private IP of the runner
+          # Detect first non-loopback IPv4 address
+          RUNNER_PRIVATE_IP=$(ip -4 -o addr show scope global | awk '{print $4}' | cut -d/ -f1 | head -n1)
+          echo "Runner private IP: $RUNNER_PRIVATE_IP"
+          echo "RUNNER_PRIVATE_IP=$RUNNER_PRIVATE_IP" >> "$GITHUB_OUTPUT"
 
       - name: Create Talos Cluster
         run: |
@@ -133,7 +142,8 @@ jobs:
             --namespace "${CILIUM_NAMESPACE}" \
             --test-namespace "${TEST_NAMESPACE}" \
             --hubble=false \
-            --flow-validation=disabled
+            --flow-validation=disabled \
+            --test "!no-policies,!allow-all-except-world"
           # cilium connectivity test --collect-sysdump-on-failure
 
       - name: Fetch artifacts
