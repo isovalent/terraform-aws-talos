@@ -218,18 +218,18 @@ jobs:
           cd test/conformance
           make destroy
 
-  finalize:
-    runs-on: ubuntu-24.04
-    if: always()
-    permissions:
-      id-token: write
-      contents: read
-    needs: setup-and-test
-    steps:
-      - name: Send notification
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: 'C02T57KV69Y'
-          slack-message: "Talos AWS Terraform: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ needs.setup-and-test.result == 'success' && 'workflow passed!> :tada::tada::tada:' || 'workflow failed!> :rotating_light::rotating_light::rotating_light:' }}"
+  # finalize:
+  #   runs-on: ubuntu-24.04
+  #   if: always()
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #   needs: setup-and-test
+  #   steps:
+  #     - name: Send notification
+  #       uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+  #       env:
+  #         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  #       with:
+  #         channel-id: 'C02T57KV69Y'
+  #         slack-message: "Talos AWS Terraform: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ needs.setup-and-test.result == 'success' && 'workflow passed!> :tada::tada::tada:' || 'workflow failed!> :rotating_light::rotating_light::rotating_light:' }}"
