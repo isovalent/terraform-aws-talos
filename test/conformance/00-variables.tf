@@ -42,12 +42,6 @@ variable "talos_version" {
   type        = string
 }
 
-variable "kubernetes_version" {
-  default     = "1.29.3"
-  description = "Kubernetes version to use for the Talos cluster, if not set, the K8s version shipped with the selected Talos version will be used. Check https://www.talos.dev/latest/introduction/support-matrix/."
-  type        = string
-}
-
 variable "service_cidr" {
   default     = "100.68.0.0/16"
   description = "The CIDR to use for K8s Services"
