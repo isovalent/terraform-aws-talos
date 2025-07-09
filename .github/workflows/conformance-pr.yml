@@ -46,6 +46,14 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
 
+      - name: GH Runner Public IP
+        id: public_ip
+        run: |
+          # Get the public IP of the runner
+          RUNNER_PUBLIC_IP=$(curl -sSf https://api.ipify.org)
+          echo "Runner public IP: $RUNNER_PUBLIC_IP"
+          echo "RUNNER_PUBLIC_IP=$RUNNER_PUBLIC_IP" >> "$GITHUB_OUTPUT"
+
       - name: Create Talos Cluster
         run: |
           cd test/conformance
@@ -105,13 +113,27 @@ jobs:
           cd test/conformance
           export $(make print-kubeconfig)
           ./wait
-          kubectl create ns cilium-test
-          kubectl create ns cilium-test-1
-          kubectl label ns cilium-test pod-security.kubernetes.io/enforce=privileged
-          kubectl label ns cilium-test pod-security.kubernetes.io/warn=privileged
-          kubectl label ns cilium-test-1 pod-security.kubernetes.io/enforce=privileged
-          kubectl label ns cilium-test-1 pod-security.kubernetes.io/warn=privileged
-          cilium connectivity test --hubble=false --flow-validation=disabled
+          # Cilium Connectivity tests namespace
+          TEST_NAMESPACE="cilium-test"
+          # All Cilium Connectivity tests namespaces
+          NAMESPACES=("${TEST_NAMESPACE}" "${TEST_NAMESPACE}-1")
+
+          # Identify the namespace where Cilium is installed
+          CILIUM_NAMESPACE=$(kubectl get ds -A -l k8s-app=cilium -o jsonpath='{.items[0].metadata.namespace}')
+
+          # NS precreation is required because of https://www.talos.dev/v1.5/kubernetes-guides/configuration/pod-security/
+          for ns in "${NAMESPACES[@]}"; do
+            kubectl create ns "${ns}"
+            kubectl label ns "${ns}" pod-security.kubernetes.io/enforce=privileged
+            kubectl label ns "${ns}" pod-security.kubernetes.io/warn=privileged
+          done
+
+          # Run the connectivity tests.
+          cilium connectivity test \
+            --namespace "${CILIUM_NAMESPACE}" \
+            --test-namespace "${TEST_NAMESPACE}" \
+            --hubble=false \
+            --flow-validation=disabled
           # cilium connectivity test --collect-sysdump-on-failure
 
       - name: Fetch artifacts
