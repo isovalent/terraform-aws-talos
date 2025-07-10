@@ -36,6 +36,12 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "cilium_namespace" {
+  default     = "kube-system"
+  description = "The namespace in which to install Cilium."
+  type        = string
+}
+
 # talos module
 variable "talos_version" {
   description = "Talos version to use for the cluster, if not set the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
