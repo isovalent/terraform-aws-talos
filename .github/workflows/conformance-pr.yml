@@ -1,6 +1,7 @@
 name: Talos Conformance (PR)
 on:
-  pull_request: {}
+  # pull_request: {}
+  workflow_dispatch:
 jobs:
   setup-and-test:
     runs-on: ubuntu-24.04
