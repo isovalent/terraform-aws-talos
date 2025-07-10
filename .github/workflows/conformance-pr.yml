@@ -28,9 +28,9 @@ jobs:
             ipv4: true
             ipv6: false
             encryption-enabled: false
-            encryption-type: ""
+            encryption-type: wireguard
             tunnel-mode: vxlan
-            nodeport: false
+            nodeport: true
             ingress-controller: false
     steps:
       - name: Checkout
@@ -67,7 +67,7 @@ jobs:
         run: |
           cd test/conformance
           ./create-ci-env.sh \
-            --kube-proxy ${{ matrix.config.kube-proxy}} \
+            --kube-proxy ${{ matrix.config.kube-proxy }} \
             --talos-version ${{ matrix.talos }} \
             --test $(echo "${{ matrix.config.name }}" | sed 's/ /_/g') \
             --run-id ${{ github.run_id }} \
@@ -99,7 +99,6 @@ jobs:
           export $(make print-kubeconfig)
           kubectl create -n kube-system secret generic cilium-ipsec-keys \
             --from-literal=keys="3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null | xxd -p -c 64)) 128"
-          kubectl create -n kube-system -f ipmasq-config.yaml
           cilium install --version="v${{ matrix.cilium }}" \
             --values=values.yaml \
             --set ipv4.enabled=${{ matrix.config.ipv4 }} \

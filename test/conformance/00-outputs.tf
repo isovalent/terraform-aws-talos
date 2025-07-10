@@ -26,3 +26,7 @@ output "region" {
 output "vpc_id" {
   value = module.vpc.id
 }
+
+output "cilium_namespace" {
+  value = var.cilium_namespace
+}
