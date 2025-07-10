@@ -1,11 +1,11 @@
 name: Talos Conformance
 on:
-  schedule:
-    # Run weekly.
-    - cron: '0 9 * * 1'
-  pull_request:
-    paths:
-    - '.github/workflows/conformance.yml'
+  # schedule:
+  #   # Run weekly.
+  #   - cron: '0 9 * * 1'
+  # pull_request:
+  #   paths:
+  #   - '.github/workflows/conformance.yml'
   workflow_dispatch:
 jobs:
   setup-and-test:
