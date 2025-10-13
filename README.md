@@ -1,6 +1,5 @@
 # Terraform Setup to Test Cilium on Talos
 
-![Talos Conformance](https://github.com/isovalent/terraform-aws-talos/actions/workflows/conformance.yml/badge.svg)
 ![Terraform docs and formatting](https://github.com/isovalent/terraform-aws-talos/actions/workflows/terraform.yml/badge.svg)
 
 A Terraform module to manage a Talos-based Kubernetes on AWS (EC2 instances). Is uses the official [Talos Terraform provider](https://github.com/siderolabs/terraform-provider-talos) in the background. We mainly followed the provided [siderolabs/contrib](https://github.com/siderolabs/contrib/tree/main/examples/terraform/aws) example.
@@ -129,7 +128,7 @@ module "talos" {
 | <a name="input_region"></a> [region](#input\_region) | The region in which to create the Talos Linux cluster. | `string` | n/a | yes |
 | <a name="input_service_cidr"></a> [service\_cidr](#input\_service\_cidr) | The CIDR to use for services. | `string` | `"100.68.0.0/16"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | The set of tags to place on the cluster. | `map(string)` | n/a | yes |
-| <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.10.4"` | no |
+| <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases. | `string` | `"v1.11.2"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC where to place the VMs. | `string` | n/a | yes |
 | <a name="input_worker_groups"></a> [worker\_groups](#input\_worker\_groups) | List of node worker node groups to create | <pre>list(object({<br/>    name               = string<br/>    instance_type      = optional(string, "m5.large")<br/>    config_patch_files = optional(list(string), [])<br/>    tags               = optional(map(string), {})<br/>  }))</pre> | <pre>[<br/>  {<br/>    "name": "default"<br/>  }<br/>]</pre> | no |

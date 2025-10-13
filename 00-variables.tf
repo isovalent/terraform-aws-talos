@@ -88,7 +88,7 @@ variable "allow_workload_on_cp_nodes" {
 }
 
 variable "talos_version" {
-  default     = "v1.10.4"
+  default     = "v1.11.2"
   description = "Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
   type        = string
   validation {
