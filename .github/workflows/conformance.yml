@@ -19,16 +19,10 @@ jobs:
       matrix:
         cilium:
           # renovate: datasource=github-releases depName=cilium/cilium
-          - '1.17.8'
-          # renovate: datasource=github-releases depName=cilium/cilium
-          #- '1.16.15'
-          # renovate: datasource=github-releases depName=cilium/cilium
-          #- '1.15.19'
+          - '1.18.2'
         talos:
           # renovate: datasource=github-releases depName=siderolabs/talos
-          - 'v1.10.7'
-          # renovate: datasource=github-releases depName=siderolabs/talos
-          #- 'v1.9.6'
+          - 'v1.11.2'
         config:
           - name: 'Cilium-Reference-Config'
             kube-proxy: false
