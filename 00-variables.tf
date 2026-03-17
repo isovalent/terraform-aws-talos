@@ -92,7 +92,7 @@ variable "talos_version" {
   description = "Talos version to use for the cluster, if not set, the newest Talos version. Check https://github.com/siderolabs/talos/releases for available releases."
   type        = string
   validation {
-    condition     = can(regex("^v\\d+\\.\\d+\\.\\d+$", var.talos_version))
+    condition     = can(regex("^v\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$", var.talos_version))
     error_message = "The talos_version value must be a valid Talos patch version, starting with 'v'."
   }
 }
