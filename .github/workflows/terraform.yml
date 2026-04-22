@@ -1,48 +1,87 @@
-name: Terraform docs and formatting
+name: Terraform
+
 on:
-  pull_request: {}
-  push:
+  pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
+
 jobs:
-  formatting:
+  find-changed-dirs:
     runs-on: ubuntu-24.04
+    outputs:
+      dirs: ${{ steps.set-matrix.outputs.dirs }}
     steps:
       - name: Checkout
-        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: terraform fmt
-        uses: dflook/terraform-fmt-check@59168426e242f665bf7b70644d706224e665056a
-        with:
-          path: .
-      - name: terraform fmt
-        uses: dflook/terraform-fmt-check@59168426e242f665bf7b70644d706224e665056a
-        with:
-          path: example
-  docs:
-    needs: formatting
+          fetch-depth: 0
+
+      - name: Extract unique directories
+        id: set-matrix
+        run: |
+          merge_base=$(git merge-base origin/main HEAD)
+          dirs=$(git diff --name-only "$merge_base" HEAD -- '*.tf' | xargs -I{} dirname {} | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          echo "dirs=$dirs" >> $GITHUB_OUTPUT
+
+  terraform:
+    needs: find-changed-dirs
+    if: ${{ needs.find-changed-dirs.outputs.dirs != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        folder: ${{ fromJson(needs.find-changed-dirs.outputs.dirs) }}
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ${{ matrix.folder }}
     steps:
       - name: Checkout
-        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-      - name: Render terraform docs inside the README.md and push changes back to PR branch
-        uses: terraform-docs/gh-actions@6de6da0cefcc6b4b7a5cbea4d79d97060733093c
+          ref: ${{ github.event.pull_request.head.ref || github.sha }}
+          fetch-depth: 0
+
+      - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
         with:
-          working-dir: .
-          output-file: README.md
-          output-method: inject
-          output-format: markdown table
-          indention: 3
-          git-push: "true"
-      - name: Render terraform docs inside the README.md and push changes back to PR branch
-        uses: terraform-docs/gh-actions@6de6da0cefcc6b4b7a5cbea4d79d97060733093c
-        with:
-          working-dir: example/
-          output-file: README.md
-          output-method: inject
-          output-format: markdown table
-          indention: 3
-          git-push: "true"
+          terraform_version: 1.14.8
+
+      - name: Terraform Fmt
+        run: terraform fmt -check
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Create Timestamp File
+        run: touch .timestamp
+
+      - name: Terraform Validate
+        run: terraform validate
+
+  final_status_check:
+    runs-on: ubuntu-24.04
+    needs: terraform
+    if: always()
+    name: Consolidated Status
+    steps:
+      - name: Check matrix job results
+        env:
+          TF_RESULT: ${{ needs.terraform.result }}
+        run: |
+          echo "Overall result of terraform job: $TF_RESULT"
+
+          if [ "$TF_RESULT" == "failure" ]; then
+            echo "One or more matrix jobs failed. Failing this consolidated check."
+            exit 1
+          elif [ "$TF_RESULT" == "cancelled" ]; then
+            echo "One or more matrix jobs were cancelled. Failing this consolidated check."
+            exit 1
+          elif [ "$TF_RESULT" == "skipped" ]; then
+            echo "The matrix job was skipped. This consolidated check will pass, but verify if this is desired behavior."
+            exit 0
+          else
+            echo "All matrix jobs passed successfully."
+            exit 0
+          fi
