@@ -162,7 +162,7 @@ variable "cilium_helm_chart" {
 }
 
 variable "cilium_helm_version" {
-  default     = "1.17.4"
+  default     = "1.19.3"
   description = "The version of the used Helm chart. Check https://github.com/cilium/cilium/releases to see available versions."
   type        = string
 }
